@@ -40,7 +40,7 @@ Param(
 $vmsecurepass=ConvertTo-SecureString -String $VMPassword -asPlainText -Force
 $cred = New-Object System.Management.Automation.PSCredential($VMUsername,$vmsecurepass)
 $so = New-PsSessionOption –SkipCACheck -SkipCNCheck
-$s = New-PSSession -ComputerName "13.67.132.89" -Credential $cred -UseSSL -SessionOption $so
+$s = New-PSSession -ComputerName $computername -Credential $cred -UseSSL -SessionOption $so
 
 Invoke-Command -Session $s -ScriptBlock {
  param($PtrUserName,$PtrPassword,$SubscriptionName,$ResourceGroupName,$DomainName,$TenantId,$Location,$SQLUserName,$SQLPassword)   
