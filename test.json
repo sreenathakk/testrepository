@@ -1,0 +1,31 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {},
+  "variables": {
+      "vmName": "testvm",
+      "SubscriptionName": "[subscription().displayname]",
+      "TenantId": "[subscription().TenantId]",
+      "DomainName": "[subscription().AD.DomainName]"
+      },
+    "resources":[],
+     "outputs": {
+      "referenceOutput": {
+          "type": "object",
+          "value": "[reference(variables('DomainName'))]"
+      },
+      "referenceOutput1": {
+        "type": "object",
+        "value": "[reference(variables('vmName'))]"
+    },
+    "referenceOutput2": {
+        "type": "object",
+        "value": "[reference(variables('SubscriptionName'))]"
+    },
+    "referenceOutput3": {
+        "type": "object",
+        "value": "[reference(variables('TenantId'))]"
+    }
+     }
+    }
+    
