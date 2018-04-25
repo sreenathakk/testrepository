@@ -5,16 +5,11 @@
   "variables": {
       "vmName": "testvm",
       "SubscriptionName": "[subscription().displayname]",
-      "TenantId": "[subscription().TenantId]",
-      "DomainName": "[subscription().AD.DomainName]"
+      "TenantId": "[subscription().TenantId]"
       },
     "resources":[],
      "outputs": {
-      "referenceOutput": {
-          "type": "object",
-          "value": "[reference(variables('DomainName'))]"
-      },
-      "referenceOutput1": {
+     "referenceOutput1": {
         "type": "object",
         "value": "[reference(variables('vmName'))]"
     },
