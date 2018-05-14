@@ -49,6 +49,7 @@ Param(
 
 
 Invoke-WebRequest -Uri $fileURI -OutFile "C:\PowershellModules.zip"
+Start-Sleep -Seconds 45
 Expand-Archive "C:\PowershellModules.zip" -DestinationPath "C:\"
 Import-Module "C:\PowershellModules\Microsoft.RDInfra.RDPowershell.dll"
 $SecurePass = $Password | ConvertTo-SecureString -asPlainText -Force
@@ -57,6 +58,7 @@ Set-RdsContext -DeploymentUrl $RdbrokerURI -Credential $Credential
 $newRdsTenant=New-RdsTenant -Name $TenantName -AadTenantId $AadTenantId -FriendlyName $FriendlyName -Description $Description
 $newRDSHostPool=New-RdsHostPool -TenantName $TenantName  -Name $HostPoolName -Description $HostPoolDescription -FriendlyName $HostPoolFriendlyName
 
+Start-Sleep -Seconds 60
 Remove-Item -Path "C:\PowershellModules.zip" -Recurse -force
 Remove-Item -Path "C:\PowershellModules" -Recurse -Force
 
@@ -67,9 +69,10 @@ Install-Module -Name AzureRM.Profile -AllowClobber -Force
 Install-Module -Name AzureRM.Compute -AllowClobber -Force
 Import-Module -Name AzureRM.Profile
 Import-Module -Name AzureRM.Compute
+
 $login=Login-AzureRmAccount -Credential $Azurecred -TenantId $AadTenantId
+
 $ResourceGroup=Get-AzureRmResourceGroup -Name $ResourceGroupName
 if($ResourceGroup){
 Remove-AzureRmResourceGroup -Name $ResourceGroupName -Force
 }
-
