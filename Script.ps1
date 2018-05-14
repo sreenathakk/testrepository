@@ -63,8 +63,10 @@ Remove-Item -Path "C:\PowershellModules" -Recurse -Force
 
 $Securepass=ConvertTo-SecureString -String $Password -AsPlainText -Force
 $Azurecred=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList($Username, $Securepass)
-Install-Module -Name AzureRM -AllowClobber -Force
-Import-Module -Name AzureRM
+Install-Module -Name AzureRM.Profile -AllowClobber -Force
+Install-Module -Name AzureRM.Compute -AllowClobber -Force
+Import-Module -Name AzureRM.Profile
+Import-Module -Name AzureRM.Compute
 $login=Login-AzureRmAccount -Credential $Azurecred -TenantId $AadTenantId
 $ResourceGroup=Get-AzureRmResourceGroup -Name $ResourceGroupName
 if($ResourceGroup){
