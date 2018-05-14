@@ -39,7 +39,9 @@ Param(
     [Parameter(Mandatory=$True)]
     [String] $Username,
     [Parameter(Mandatory=$True)]
-    [string] $Password
+    [string] $Password,
+    [Parameter(Mandatory=$True)]
+    [string] $ResourceGroupName
 
 
   
@@ -57,3 +59,15 @@ $newRDSHostPool=New-RdsHostPool -TenantName $TenantName  -Name $HostPoolName -De
 
 Remove-Item -Path "C:\PowershellModules.zip" -Recurse -force
 Remove-Item -Path "C:\PowershellModules" -Recurse -Force
+
+
+$Securepass=ConvertTo-SecureString -String $Password -AsPlainText -Force
+$Azurecred=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList($Username, $Securepass)
+
+$login=Login-AzureRmAccount -Credential $Azurecred -TenantId $AadTenantId
+
+$ResourceGroup=Get-AzureRmResourceGroup -Name $ResourceGroupName
+if($ResourceGroup){
+Remove-AzureRmResourceGroup -Name $ResourceGroupName -Force
+}
+
