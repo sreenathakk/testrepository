@@ -53,6 +53,7 @@ $SecurePass = $Password | ConvertTo-SecureString -asPlainText -Force
 $Credential = New-Object System.Management.Automation.PSCredential($Username,$SecurePass)
 Set-RdsContext -DeploymentUrl $RdbrokerURI -Credential $Credential
 $newRdsTenant=New-RdsTenant -Name $TenantName -AadTenantId $AadTenantId -FriendlyName $FriendlyName -Description $Description
+start-sleep -seconds 10
 $newRDSHostPool=New-RdsHostPool -TenantName $tenName -Name $HostPoolName -Description $HostPoolDescription -FriendlyName $HostPoolFriendlyName
 
 Remove-Item -Path "C:\PowershellModules.zip" -Recurse -force
