@@ -57,11 +57,11 @@ $Credential = New-Object System.Management.Automation.PSCredential($Username,$Se
 Set-RdsContext -DeploymentUrl $RdbrokerURI -Credential $Credential
 $newRdsTenant=New-RdsTenant -Name $TenantName -AadTenantId $AadTenantId -FriendlyName $FriendlyName -Description $Description
 $newRDSHostPool=New-RdsHostPool -TenantName $TenantName  -Name $HostPoolName -Description $HostPoolDescription -FriendlyName $HostPoolFriendlyName
-
+<#
 Start-Sleep -Seconds 60
 Remove-Item -Path "C:\PowershellModules.zip" -Recurse -force
 Remove-Item -Path "C:\PowershellModules" -Recurse -Force
-
+#>
 
 $Securepass=ConvertTo-SecureString -String $Password -AsPlainText -Force
 $Azurecred=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList($Username, $Securepass)
