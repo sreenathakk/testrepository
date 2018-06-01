@@ -112,7 +112,7 @@ $CheckRegistery = Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\
 
             Write-Log -Message "VM was not registered with RDInfraAgent, script is executing"
             }
-#Getting fqdn of rdsh vm
+
 
 if (!$CheckRegistery) {
     #Importing RDMI PowerShell module
@@ -123,12 +123,15 @@ if (!$CheckRegistery) {
     $Credentials = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($DelegateAdminUsername, $Securepass)
     $DAdminSecurepass = ConvertTo-SecureString -String $DomainAdminPassword -AsPlainText -Force
     $domaincredentials = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($DomainAdminUsername, $DAdminSecurepass)
+
+    #Getting fqdn of rdsh vm
     $SessionHostName = (Get-WmiObject win32_computersystem).DNSHostName + "." + (Get-WmiObject win32_computersystem).Domain
             Write-Log  -Message "Fully qualified domain name of VM $SessionHostName"
     
     #Setting RDS Context
     $authentication=Set-RdsContext -DeploymentUrl $RDBrokerURL -Credential $Credentials
     $obj=$authentication | Out-String
+    
     if($authentication){
         Write-Log -Message "RDMI Authentication successfully Done. Result: `
        $obj"  
@@ -144,6 +147,7 @@ if (!$CheckRegistery) {
         if ($HPName) {
         Write-log -Message "Hostpool is existing inside the tenant"
 
+        
         Write-Log -Message "Checking Hostpool UseResversconnect is true or false"
           # Cheking UseReverseConnect is true or false
         if($HPName.UseReverseConnect -eq $False)
@@ -155,11 +159,11 @@ if (!$CheckRegistery) {
         #Exporting existed rdsregisterationinfo of hostpool
         $Registered = Export-RdsRegistrationInfo -TenantName $TenantName -HostPoolName $HostPoolName
         $reglog=$registered | Out-String
-        Write-Log -Message "Exporting Rds RegisterationInfo to variable $reglog'"
+        Write-Log -Message "Exported Rds RegisterationInfo into variable 'Registered' $reglog"
         $systemdate = (GET-DATE)
         $Tokenexpiredate = $Registered.ExpirationUtc
         $difference = $Tokenexpiredate - $systemdate
-        write-log "calculating date and time whether expired or not with system time"
+        write-log "Calculating date and time whether expired or not? with system date and time"
         if ($difference -lt 0 -or $Registered -eq 'null') {
         write-log "Registerationinfo was expired, now again creating new registeration info with hours $Hours"
             $Registered = New-RdsRegistrationInfo -TenantName $TenantName -HostPoolName $HostPoolName -ExpirationHours $Hours
@@ -199,7 +203,7 @@ if (!$CheckRegistery) {
     $addRdsh=Set-RdsSessionHost -TenantName $TenantName -HostPoolName $HostPoolName -Name $SessionHostName -AllowNewSession $true -MaxSessionLimit $MaxSessionLimit
     $rdshName=$addRdsh.name | Out-String
     $poolName=$addRdsh.hostpoolname | Out-String
-    Write-Log -Message "Successfully added '$rdshName' VM to '$poolName'"
+    Write-Log -Message "Successfully added $rdshName VM to $poolName"
 }
 
 Remove-Item -Path "C:\DeployAgent.zip" -Recurse -force
