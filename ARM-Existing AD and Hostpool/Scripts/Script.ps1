@@ -201,6 +201,9 @@ if (!$CheckRegistery) {
     $poolName=$addRdsh.hostpoolname | Out-String
     Write-Log -Message "Successfully added '$rdshName' VM to '$poolName'"
 }
+
+Remove-Item -Path "C:\DeployAgent.zip" -Recurse -force
+Remove-Item -Path "C:\DeployAgent" -Recurse -Force
 }
 catch{
     Write-log -Error $_.Exception.Message
