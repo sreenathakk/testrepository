@@ -76,3 +76,9 @@ $ResourceGroup=Get-AzureRmResourceGroup -Name $ResourceGroupName
 if($ResourceGroup){
 Remove-AzureRmResourceGroup -Name $ResourceGroupName -Force
 }
+
+
+
+   $a = new-object -comobject wscript.shell
+
+   $a.Popup("Do you want to choose Yes or No?", 0,"Confirmation",4)

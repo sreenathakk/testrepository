@@ -21,6 +21,7 @@ $tenantname="PTG-Tenant"
 #$hostpool="MSFT-Hostpool2"
 $hostpool="MSFT-Hostpool"
 
+
 $allshs=Get-RdsSessionHost -TenantName $tenantname -HostPoolName $hostpool
 
 Function Get-RdpSessions 
@@ -44,16 +45,13 @@ Function Get-RdpSessions
 
 Function Remove-AzureRMVMInstanceResource {
  Param (
-    [parameter(mandatory)]
-    [String]$ResourceGroup,
-    
     # The VM name to remove, regex are supported
     [parameter(mandatory)]
     [String]$VMName
  )
 
     # Remove the VM's and then remove the datadisks, osdisk, NICs
-    Get-AzureRmVM -ResourceGroupName $ResourceGroup | Where Name -Match $VMName  | foreach {
+    Get-AzureRmVM | Where-Object {$_.name -eq $VMName}  | foreach {
         $a=$_
         $DataDisks = @($_.StorageProfile.DataDisks.Name)
         $OSDisk = @($_.StorageProfile.OSDisk.Name) 
@@ -68,14 +66,14 @@ Function Remove-AzureRMVMInstanceResource {
             $_.NetworkProfile.NetworkInterfaces | ForEach-Object {
                 $NICName = Split-Path -Path $_.ID -leaf
                 #Write-Warning -Message "Removing NIC: $NICName"
-                Get-AzureRmNetworkInterface -ResourceGroupName $ResourceGroup -Name $NICName | Remove-AzureRmNetworkInterface -Force
+                Get-AzureRmNetworkInterface -Name $NICName | Remove-AzureRmNetworkInterface -Force
             }
 
             # Support to remove managed disks
             if($a.StorageProfile.OsDisk.ManagedDisk ) {
                 ($DataDisks + $OSDisk) | ForEach-Object {
                     #Write-Warning -Message "Removing Disk: $_"
-                    Get-AzureRmDisk -ResourceGroupName $ResourceGroup -DiskName $_ | Remove-AzureRmDisk -Force
+                    Get-AzureRmDisk -DiskName $_ | Remove-AzureRmDisk -Force
                 }
             }
             # Support to remove unmanaged disks (from Storage Account Blob)
@@ -83,7 +81,7 @@ Function Remove-AzureRMVMInstanceResource {
                 # This assumes that OSDISK and DATADisks are on the same blob storage account
                 # Modify the function if that is not the case.
                 $saname = ($a.StorageProfile.OsDisk.Vhd.Uri -split '\.' | Select -First 1) -split '//' |  Select -Last 1
-                $sa = Get-AzureRmStorageAccount -ResourceGroupName $ResourceGroup -Name $saname
+                $sa = Get-AzureRmStorageAccount -Name $saname
         
                 # Remove DATA disks
                 $a.StorageProfile.DataDisks | foreach {
@@ -179,7 +177,7 @@ Import-Module AzureRM.Compute
 #Login-AzureRmAccount -SubscriptionName "RDMI Partner"
 $VMName=$sh.Split(".")[0]
 
-Remove-AzureRMVMInstanceResource -ResourceGroup $ResourceGroupName -VMName $VMName
+Remove-AzureRMVMInstanceResource -ResourceGroup $Resour -VMName $VMName
 
 
 }

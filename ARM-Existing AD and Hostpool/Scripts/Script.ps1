@@ -180,7 +180,7 @@ if (!$CheckRegistery) {
     else {
         # creating new hostpool
         $Hostpool = New-RdsHostPool -TenantName $TenantName -Name $HostPoolName -Description $Description -FriendlyName $FriendlyName
-        $HName=$hostpool.name | outstring
+        $HName=$hostpool.name | Out-String
         Write-Log -Message "Successfully created new Hostpool $HName"
         
         # setting up usereverseconnect as true
