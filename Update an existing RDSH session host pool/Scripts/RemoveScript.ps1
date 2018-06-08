@@ -41,8 +41,6 @@ $Credentials=New-Object -TypeName System.Management.Automation.PSCredential -Arg
     #Setting RDS Context
     Set-RdsContext -DeploymentUrl $RDBrokerURL -Credential $Credentials
 
-$sessions=@()
-
 
 $allshs=Get-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName
 
@@ -78,9 +76,7 @@ Function Remove-AzureRMVMInstanceResource {
     Get-AzureRmVM | Where-Object {$_.name -eq $VMName}  | foreach {
         $a=$_
         $DataDisks = @($_.StorageProfile.DataDisks.Name)
-        $OSDisk = @($_.StorageProfile.OSDisk.Name) 
-
-        $avset=@($_.AvailabilitySetReference.Id)
+        $OSDisk = @($_.StorageProfile.OSDisk.Name)
 
         if ($pscmdlet.ShouldProcess("$($_.Name)", "Removing VM, Disks and NIC: $($_.Name)"))
         {
@@ -122,6 +118,7 @@ Function Remove-AzureRMVMInstanceResource {
                 Get-AzureStorageBlob -Blob  $disk |
                 Remove-AzureStorageBlob
                 
+                # Remove Boot Diagnostic
                 $diagvmname=0
                 $diag=$_.Name.ToLower()
                 $diagvmname=$diag -replace '[\-]', ''
@@ -136,7 +133,7 @@ Function Remove-AzureRMVMInstanceResource {
             # If you are on the network you can cleanup the Computer Account in AD            
 	        Get-ADComputer -Identity $a.OSProfile.ComputerName | Remove-ADObject -Recursive -confirm:$false
             Remove-DnsServerResourceRecord -ZoneName $DomainName -RRType "A" -Name $a.OSProfile.ComputerName -Force -Confirm:$false
-            return $avset
+            
         }#PSCmdlet(ShouldProcess)
     }
 
@@ -199,8 +196,20 @@ Function Remove-AzureRMVMInstanceResource {
 
     
     $allcomputers=$computers | select -Unique
+            
+                $LoadModule=Get-Module -ListAvailable "Azure*"
+                
+                if(!$LoadModule){
+                    Install-PackageProvider NuGet -Force
+                    Install-Module -Name azurerm -AllowClobber -Force
+                    }
+                        Import-Module AzureRM.profile
+                        Import-Module AzureRM.Compute
+                        Import-Module AzureRM.Resources
 
             $TenantLogin=Login-AzureRmAccount -Credential $Credentials -SubscriptionId $SubscriptionId
+
+            
 
             foreach($sh in $allcomputers){
                 
@@ -211,22 +220,14 @@ Function Remove-AzureRMVMInstanceResource {
                 
                 Remove-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName -Name $sh -Force $true
                 
-                $LoadModule=Get-Module -ListAvailable "Azure*"
-                
-                if(!$LoadModule){
-                    Install-PackageProvider NuGet -Force
-                    Install-Module -Name azurerm -AllowClobber -Force
-                    }
-                        Import-Module AzureRM.profile
-                        Import-Module AzureRM.Compute
-                
                 $VMName=$sh.Split(".")[0]
-                
-                $removeVM=Remove-AzureRMVMInstanceResource -VMName $VMName
+                $avset=Get-AzureRmVM | where-object {$_.Name -eq $VMName} | select-Object {$_.AvailabilitySetReference.Id}
+                                
+                Remove-AzureRMVMInstanceResource -VMName $VMName
                 #$removeVM
-                #Remove-AzureRmResource -ResourceId $removeVM -Force
+                
                 }
-
+                Remove-AzureRmResource -ResourceId $avset.'$_.AvailabilitySetReference.Id' -Force
 
     }
         catch{
