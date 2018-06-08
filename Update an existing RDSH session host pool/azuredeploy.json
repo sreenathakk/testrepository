@@ -84,10 +84,10 @@
                 "description": "Existed Tenant Name"
             }
         },
-        "HostPoolName": {
+        "ExistingHostPoolName": {
             "type": "string",
             "metadata": {
-                "description": "New or Existing HostPool Name"
+                "description": "Existing HostPool Name"
             }
         },
         "DelegatedAdminUsername": {
@@ -108,6 +108,7 @@
     "variables": {
         "rdshPrefix": "[concat(parameters('rdshNamePrefix'),'-')]",
         "subscriptionId": "f657519e-2b49-48fe-85ec-3acff0ac67a6",
+        "RegistrationExpirationHours": "48",
         "vhds": "[concat('vhds','/', variables('rdshPrefix'))]",
         "storageAccountName": "[split( split( parameters('VmImageVhdUri'), '/')[2], '.' )[0]]",
         "_artifactsLocation": "https://raw.githubusercontent.com/sreenathakk/testrepository/master/Update%20an%20existing%20RDSH%20session%20host%20pool/",
@@ -251,7 +252,7 @@
                             "fileUris": [
                                 "https://raw.githubusercontent.com/sreenathakk/testrepository/master/Update%20an%20existing%20RDSH%20session%20host%20pool/Scripts/RemoveScript.ps1"
                             ],
-                            "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File RemoveScript.ps1',' -RDBrokerURL \"', parameters('RDBrokerURL'), '\"',' ',' -TenantName \"', parameters('ExistingTenantName'), '\"',' ', ' -HostPoolName \"', parameters('HostPoolName'), '\"',' ', ' -DelegateAdminUsername \"', parameters('DelegatedAdminUsername'), '\"',' ', ' -DelegateAdminpassword \"', parameters('DelegatedAdminpassword'), '\"',' ', '-SubscriptionId \"', variables('subscriptionId'), '\"',' ', ' -Fileuri \"', variables('Fileuri'), '\"')]"
+                            "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File RemoveScript.ps1',' -RDBrokerURL \"', parameters('RDBrokerURL'), '\"',' ',' -TenantName \"', parameters('ExistingTenantName'), '\"',' ', ' -HostPoolName \"', parameters('ExistingHostPoolName'), '\"',' ', ' -DelegateAdminUsername \"', parameters('DelegatedAdminUsername'), '\"',' ', ' -DelegateAdminpassword \"', parameters('DelegatedAdminpassword'), '\"',' ', '-SubscriptionId \"', variables('subscriptionId'), '\"',' ', ' -Fileuri \"', variables('Fileuri'), '\"')]"
                         }
                     }
                 },
@@ -281,7 +282,7 @@
                     "fileUris": [
                         "https://raw.githubusercontent.com/sreenathakk/testrepository/master/Update%20an%20existing%20RDSH%20session%20host%20pool/Scripts/Script.ps1"
                     ],
-                    "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File Script.ps1',' -RDBrokerURL \"', parameters('RDBrokerURL'), '\"',' ',' -TenantName \"', parameters('ExistingTenantName'), '\"',' ', ' -HostPoolName \"', parameters('HostPoolName'), '\"',' ', ' -Hours \"', variables('RegistrationExpirationHours'), '\"',' ', ' -DelegateAdminUsername \"', parameters('DelegatedAdminUsername'), '\"',' ', ' -DelegateAdminpassword \"', parameters('DelegatedAdminpassword'), '\"',' ',' -DomainAdminUsername \"', parameters('existingDomainUsername'), '\"',' ', ' -DomainAdminpassword \"', parameters('existingDomainPassword'), '\"',' ', ' -Fileuri \"', variables('Fileuri'), '\"')]"
+                    "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File Script.ps1',' -RDBrokerURL \"', parameters('RDBrokerURL'), '\"',' ',' -TenantName \"', parameters('ExistingTenantName'), '\"',' ', ' -HostPoolName \"', parameters('ExistingHostPoolName'), '\"',' ', ' -Hours \"', variables('RegistrationExpirationHours'), '\"',' ', ' -DelegateAdminUsername \"', parameters('DelegatedAdminUsername'), '\"',' ', ' -DelegateAdminpassword \"', parameters('DelegatedAdminpassword'), '\"',' ',' -DomainAdminUsername \"', parameters('existingDomainUsername'), '\"',' ', ' -DomainAdminpassword \"', parameters('existingDomainPassword'), '\"',' ', ' -Fileuri \"', variables('Fileuri'), '\"')]"
                 }
             }
         }
