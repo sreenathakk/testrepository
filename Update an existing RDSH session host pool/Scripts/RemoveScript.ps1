@@ -153,7 +153,6 @@ Function Remove-AzureRMVMInstanceResource {
             if($sessionid.UserPrincipalname -ne $null){
             $UPname=$sessionid.UserPrincipalname
             $sessionusers+=$UPname.split("\")[1]
-            $sessionusers
             }
             }
 
