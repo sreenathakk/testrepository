@@ -22,7 +22,6 @@
 )
 
 
-
     Invoke-WebRequest -Uri $fileURI -OutFile "C:\DeployAgent.zip"
     #Write-Log -Message "Downloaded DeployAgent.zip into this location C:\"
 
@@ -30,7 +29,7 @@
     New-Item -Path "C:\DeployAgent" -ItemType directory -Force -ErrorAction SilentlyContinue
     #Write-Log -Message "Created a new folder which is 'DeployAgent' inside VM"
     Expand-Archive "C:\DeployAgent.zip" -DestinationPath "C:\DeployAgent" -ErrorAction SilentlyContinue
-    #Write-Log -Message "Extracted the 'Deployagent.zip' file into 'C:\Deployagent' folder inside VM"
+   #Write-Log -Message "Extracted the 'Deployagent.zip' file into 'C:\Deployagent' folder inside VM"
     Set-Location "C:\DeployAgent"
     #Write-Log -Message "Setting up the location of Deployagent folder"
 
@@ -147,20 +146,17 @@ Function Remove-AzureRMVMInstanceResource {
 
             $sessionusers=0
             $sessionusers=@()
-            $UPname=0
-            $UPname=@()
-                
+                          
                 $sid=Get-RdsUserSession -TenantName $tenantname -HostPoolName $HostPoolName
             
-            if($sid -ne 'null'){
-                   
-            $UPname+=$sid.UserPrincipalname
-                foreach($u in $UPname){
-                            if($u -ne 'null'){
-                                $sessionusers+=$u.split("\")[1] 
-                               }
-                            }
-             }
+            foreach($sessionid in $sid){
+            if($sessionid.UserPrincipalname -ne $null){
+            $UPname=$sessionid.UserPrincipalname
+            $sessionusers+=$UPname.split("\")[1]
+            $sessionusers
+            }
+            }
+
 
         $computers=0
         $computers=@()
@@ -174,7 +170,6 @@ Function Remove-AzureRMVMInstanceResource {
 
         if(!$cim){
                     $computers+=$shsname
-                    $computer=$computers.Split(".")[0]
                 }
                 else
                 {
