@@ -214,25 +214,13 @@ Function Remove-AzureRMVMInstanceResource {
 
                         if (!(Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue -ListAvailable)) 
                         {
-                            Write-Verbose 'Installing nuget Package Provider'
                             Install-PackageProvider -Name nuget -Force
                         }
                         
-                        $modules=@('AzureRM.Profile';'AzureRM.Compute';'Azure.Resources')
-                        
-                        foreach($module in $modules) 
-                        {
-                            if (!(Get-Module -Name $module -ListAvailable) )
-                            {
-                                Write-Verbose "Installing PowerShell Module $module"
-                                Install-Module $module -Force
-                            } 
-                        }
+                        Install-Module AzureRm -AllowClobber -Force
 
 
             
-            #$TenantLogin=login-AzureRmAccount -SubscriptionId $SubscriptionId  -Credential $Credentials 
-
             $loginResult=login-AzureRmAccount -SubscriptionId $SubscriptionId  -Credential $Credentials 
             if ($loginResult.Context.Subscription.Id -eq $SubscriptionId)
             {
