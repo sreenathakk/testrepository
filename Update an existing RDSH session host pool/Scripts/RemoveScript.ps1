@@ -199,7 +199,7 @@ Function Remove-AzureRMVMInstanceResource {
 
     
     $allcomputers=$computers | select -Unique
-            
+            <#
                 $LoadModule=Get-Module -ListAvailable "Azure*"
                 
                 if(!$LoadModule){
@@ -210,11 +210,38 @@ Function Remove-AzureRMVMInstanceResource {
                     }
                         Import-Module AzureRM.profile
                         Import-Module AzureRM.Compute
-                        Import-Module AzureRM.Resources
+                        Import-Module AzureRM.Resources #>
 
-            $TenantLogin=add-AzureRmAccount -SubscriptionId $SubscriptionId  -Credential $Credentials 
+                        if (!(Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue -ListAvailable)) 
+                        {
+                            Write-Verbose 'Installing nuget Package Provider'
+                            Install-PackageProvider -Name nuget -Force
+                        }
+                        
+                        $modules=@('AzureRM.Profile';'AzureRM.Compute';'Azure.Resources')
+                        
+                        foreach($module in $modules) 
+                        {
+                            if (!(Get-Module -Name $module -ListAvailable) )
+                            {
+                                Write-Verbose "Installing PowerShell Module $module"
+                                Install-Module $module -Force
+                            } 
+                        }
+
 
             
+            #$TenantLogin=login-AzureRmAccount -SubscriptionId $SubscriptionId  -Credential $Credentials 
+
+            $loginResult=login-AzureRmAccount -SubscriptionId $SubscriptionId  -Credential $Credentials 
+            if ($loginResult.Context.Subscription.Id -eq $SubscriptionId)
+            {
+                 $success=$true
+            }
+            else 
+            {
+                 throw "Subscription Id $SubscriptionId not in context"
+            }
 
             foreach($sh in $allcomputers){
                 
