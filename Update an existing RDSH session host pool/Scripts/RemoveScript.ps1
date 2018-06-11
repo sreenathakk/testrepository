@@ -18,7 +18,13 @@
     [string]$SubscriptionId,
 
     [Parameter(mandatory = $false)]
-    [string]$FileURI
+    [string]$FileURI,
+
+    [Parameter(mandatory = $true)]
+    [string]$DomainAdminUsername,
+
+    [Parameter(mandatory = $true)]
+    [string]$DomainAdminPassword
 )
 
 
@@ -36,6 +42,8 @@
 Import-Module .\PowershellModules\Microsoft.RDInfra.RDPowershell.dll
 $Securepass=ConvertTo-SecureString -String $DelegateAdminpassword -AsPlainText -Force
 $Credentials=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList($DelegateAdminUsername, $Securepass)
+$DAdminSecurepass = ConvertTo-SecureString -String $DomainAdminPassword -AsPlainText -Force
+$domaincredentials = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($DomainAdminUsername, $DAdminSecurepass)
 
     #Setting RDS Context
     Set-RdsContext -DeploymentUrl $RDBrokerURL -Credential $Credentials
@@ -131,7 +139,7 @@ Function Remove-AzureRMVMInstanceResource {
             #
             # If you are on the network you can cleanup the Computer Account in AD            
 	        Get-ADComputer -Identity $a.OSProfile.ComputerName | Remove-ADObject -Recursive -confirm:$false
-            Remove-DnsServerResourceRecord -ZoneName $DomainName -RRType "A" -Name $a.OSProfile.ComputerName -Force -Confirm:$false
+            #Remove-DnsServerResourceRecord -ZoneName $DomainName -RRType "A" -Name $a.OSProfile.ComputerName -Force -Confirm:$false
             
         }#PSCmdlet(ShouldProcess)
     }
@@ -196,13 +204,15 @@ Function Remove-AzureRMVMInstanceResource {
                 
                 if(!$LoadModule){
                     Install-PackageProvider NuGet -Force
-                    Install-Module -Name azurerm -AllowClobber -Force
+                    Install-Module -Name AzureRM.profile -AllowClobber -Force
+                    Install-Module -Name AzureRM.Compute -AllowClobber -Force
+                    Install-Module -Name AzureRM.Resources -AllowClobber -Force
                     }
                         Import-Module AzureRM.profile
                         Import-Module AzureRM.Compute
                         Import-Module AzureRM.Resources
 
-            $TenantLogin=Login-AzureRmAccount -Credential $Credentials -SubscriptionId $SubscriptionId
+            $TenantLogin=add-AzureRmAccount -SubscriptionId $SubscriptionId  -Credential $Credentials 
 
             
 
@@ -241,7 +251,7 @@ if ($HPName.UseReverseConnect -eq $False) {
             }
 
 }
-
+$SessionHostName = (Get-WmiObject win32_computersystem).DNSHostName + "." + (Get-WmiObject win32_computersystem).Domain
 $Registered = Export-RdsRegistrationInfo -TenantName $TenantName -HostPoolName $HostPoolName
 $systemdate = (GET-DATE)
             $Tokenexpiredate = $Registered.ExpirationUtc
