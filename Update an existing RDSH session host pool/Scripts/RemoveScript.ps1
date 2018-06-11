@@ -199,26 +199,18 @@ Function Remove-AzureRMVMInstanceResource {
 
     
     $allcomputers=$computers | select -Unique
-            <#
-                $LoadModule=Get-Module -ListAvailable "Azure*"
-                
-                if(!$LoadModule){
-                    Install-PackageProvider NuGet -Force
-                    Install-Module -Name AzureRM.profile -AllowClobber -Force
-                    Install-Module -Name AzureRM.Compute -AllowClobber -Force
-                    Install-Module -Name AzureRM.Resources -AllowClobber -Force
-                    }
-                        Import-Module AzureRM.profile
-                        Import-Module AzureRM.Compute
-                        Import-Module AzureRM.Resources #>
+            
 
                         if (!(Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue -ListAvailable)) 
                         {
                             Install-PackageProvider -Name nuget -Force
                         }
                         
+                        $LoadModule=Get-Module -ListAvailable "Azure*"
+                        
+                        if(!$LoadModule){
                         Install-Module AzureRm -AllowClobber -Force
-
+                        }
 
             
             $loginResult=login-AzureRmAccount -SubscriptionId $SubscriptionId  -Credential $Credentials 
