@@ -153,6 +153,7 @@ Function Remove-AzureRMVMInstanceResource {
             if($sessionid.UserPrincipalname -ne $null){
             $UPname=$sessionid.UserPrincipalname
             $sessionusers+=$UPname.split("\")[1]
+            $sessionusers
             }
             }
 
@@ -228,3 +229,29 @@ Function Remove-AzureRMVMInstanceResource {
 
 
             }
+
+
+$CheckRegistery = Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\RDInfraAgent" -ErrorAction SilentlyContinue
+if (!$CheckRegistery) {
+$HPName = Get-RdsHostPool -TenantName $TenantName -Name $HostPoolName -ErrorAction SilentlyContinue
+if ($HPName) {
+if ($HPName.UseReverseConnect -eq $False) {
+                
+                Set-RdsHostPool -TenantName $TenantName -Name $HostPoolName -UseReverseConnect $true
+            }
+
+}
+
+$Registered = Export-RdsRegistrationInfo -TenantName $TenantName -HostPoolName $HostPoolName
+$systemdate = (GET-DATE)
+            $Tokenexpiredate = $Registered.ExpirationUtc
+            $difference = $Tokenexpiredate - $systemdate
+            
+            if ($difference -lt 0 -or $Registered -eq 'null') {
+                
+                $Registered = New-RdsRegistrationInfo -TenantName $TenantName -HostPoolName $HostPoolName -ExpirationHours $Hours
+            }
+
+            $DAgentInstall = .\DeployAgent.ps1 -ComputerName $SessionHostName -AgentInstaller ".\RDInfraAgentInstall\Microsoft.RDInfra.RDAgent.Installer-x64.msi" -SxSStackInstaller ".\RDInfraSxSStackInstall\Microsoft.RDInfra.StackSxS.Installer-x64.msi" -AdminCredentials $domaincredentials -TenantName $TenantName -PoolName $HostPoolName -RegistrationToken $Registered.Token -StartAgent $true
+            $addRdsh = Set-RdsSessionHost -TenantName $TenantName -HostPoolName $HostPoolName -Name $SessionHostName -AllowNewSession $true
+}
