@@ -133,6 +133,11 @@ Function Remove-AzureRMVMInstanceResource {
                 $diagvmname=0
                 $diag=$_.Name.ToLower()
                 $diagvmname=$diag -replace '[\-]', ''
+                $dcount=$diagvmname.Length
+                            if($dcount -cgt 9){
+                                $digsplt=$diagvmname.split("0")[0]
+                                $diagvmname=$digsplt
+                                }
                 $diagContainerName = ('bootdiagnostics-{0}-{1}' -f $diagvmname, $_.VmId)
                 Set-AzureRmCurrentStorageAccount -Context $sa.Context
                 Remove-AzureStorageContainer -Name $diagContainerName -Force
@@ -209,6 +214,7 @@ Function Remove-AzureRMVMInstanceResource {
                         $DControllerVM=$DName.Name
                         $ZoneName=$DName.Forest
                 
+                do{
                         Write-Output "checking nuget package existed or not"
                         if (!(Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue -ListAvailable)) 
                         {
@@ -222,9 +228,9 @@ Function Remove-AzureRMVMInstanceResource {
                         Write-Output "installing azureModule inside vm: $env:COMPUTERNAME"
                         Install-Module AzureRm -AllowClobber -Force
                         }
-
+                        } until($LoadModule)
             #Import-Module AzureRM.Resources
-            Import-Module Azurerm
+            #Import-Module Azurerm
             $AzSecurepass=ConvertTo-SecureString -String $DelegateAdminpassword -AsPlainText -Force
             $AzCredentials=New-Object System.Management.Automation.PSCredential($DelegateAdminUsername, $AzSecurepass)
             $loginResult=Login-AzureRmAccount -SubscriptionId $SubscriptionId  -Credential $AzCredentials
@@ -266,7 +272,8 @@ Function Remove-AzureRMVMInstanceResource {
 
             }
 
-
+$allHosts=Get-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName
+if(!$allHosts){
 $CheckRegistery = Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\RDInfraAgent" -ErrorAction SilentlyContinue
 if (!$CheckRegistery) {
 $HPName = Get-RdsHostPool -TenantName $TenantName -Name $HostPoolName -ErrorAction SilentlyContinue
@@ -290,4 +297,9 @@ $systemdate = (GET-DATE)
 
             $DAgentInstall = .\DeployAgent.ps1 -ComputerName $SessionHostName -AgentInstaller ".\RDInfraAgentInstall\Microsoft.RDInfra.RDAgent.Installer-x64.msi" -SxSStackInstaller ".\RDInfraSxSStackInstall\Microsoft.RDInfra.StackSxS.Installer-x64.msi" -AdminCredentials $domaincredentials -TenantName $TenantName -PoolName $HostPoolName -RegistrationToken $Registered.Token -StartAgent $true
             $addRdsh = Set-RdsSessionHost -TenantName $TenantName -HostPoolName $HostPoolName -Name $SessionHostName -AllowNewSession $true
+}
+}
+else
+{
+Write-Output $allhosts.name
 }
