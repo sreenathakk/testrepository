@@ -40,8 +40,12 @@
     #Write-Log -Message "Setting up the location of Deployagent folder"
 
 Import-Module .\PowershellModules\Microsoft.RDInfra.RDPowershell.dll
+
+#AzureLogin Credentials
 $Securepass=ConvertTo-SecureString -String $DelegateAdminpassword -AsPlainText -Force
 $Credentials=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList($DelegateAdminUsername, $Securepass)
+
+#Domain Credentials
 $DAdminSecurepass = ConvertTo-SecureString -String $DomainAdminPassword -AsPlainText -Force
 $domaincredentials = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($DomainAdminUsername, $DAdminSecurepass)
 
@@ -135,8 +139,6 @@ Function Remove-AzureRMVMInstanceResource {
                 
 
             }
-            $DomainName=(Get-WmiObject win32_computersystem).Domain
-            #
             # If you are on the network you can cleanup the Computer Account in AD            
 	        Get-ADComputer -Identity $a.OSProfile.ComputerName | Remove-ADObject -Recursive -confirm:$false
             #Remove-DnsServerResourceRecord -ZoneName $DomainName -RRType "A" -Name $a.OSProfile.ComputerName -Force -Confirm:$false
@@ -161,7 +163,7 @@ Function Remove-AzureRMVMInstanceResource {
             if($sessionid.UserPrincipalname -ne $null){
             $UPname=$sessionid.UserPrincipalname
             $sessionusers+=$UPname.split("\")[1]
-            $sessionusers
+            #$sessionusers
             }
             }
 
@@ -199,7 +201,14 @@ Function Remove-AzureRMVMInstanceResource {
 
     
     $allcomputers=$computers | select -Unique
-            
+    
+                        #Get Domaincontroller VMname
+
+
+                        $DName=Get-ADDomainController
+                        $DControllerVM=$DName.Name
+                        $ZoneName=$DName.Forest
+                
 
                         if (!(Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue -ListAvailable)) 
                         {
@@ -212,8 +221,11 @@ Function Remove-AzureRMVMInstanceResource {
                         Install-Module AzureRm -AllowClobber -Force
                         }
 
-            
-            $loginResult=login-AzureRmAccount -SubscriptionId $SubscriptionId  -Credential $Credentials 
+            #Import-Module AzureRM.Resources
+            Import-Module Azurerm
+            $AzSecurepass=ConvertTo-SecureString -String $DelegateAdminpassword -AsPlainText -Force
+            $AzCredentials=New-Object System.Management.Automation.PSCredential($DelegateAdminUsername, $AzSecurepass)
+            $loginResult=Login-AzureRmAccount -SubscriptionId $SubscriptionId  -Credential $AzCredentials
             if ($loginResult.Context.Subscription.Id -eq $SubscriptionId)
             {
                  $success=$true
@@ -222,7 +234,8 @@ Function Remove-AzureRMVMInstanceResource {
             {
                  throw "Subscription Id $SubscriptionId not in context"
             }
-
+            
+            
             foreach($sh in $allcomputers){
                 
                 # setting rdsh vm in drain mode
@@ -236,8 +249,12 @@ Function Remove-AzureRMVMInstanceResource {
                 $avset=Get-AzureRmVM | where-object {$_.Name -eq $VMName} | select-Object {$_.AvailabilitySetReference.Id}
                                 
                 Remove-AzureRMVMInstanceResource -VMName $VMName
+
                 #$removeVM
-                
+                Invoke-Command -ComputerName $DControllerVM -Credential $domaincredentials -ScriptBlock{
+                Param($ZoneName,$VMName)
+                Remove-DnsServerResourceRecord -ZoneName $ZoneName -RRType "A" -Name $VMName -Force -Confirm:$false
+                } -ArgumentList($ZoneName,$VMName)
                 }
                 Remove-AzureRmResource -ResourceId $avset.'$_.AvailabilitySetReference.Id' -Force
 
