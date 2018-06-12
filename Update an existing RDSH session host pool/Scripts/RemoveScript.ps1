@@ -209,15 +209,17 @@ Function Remove-AzureRMVMInstanceResource {
                         $DControllerVM=$DName.Name
                         $ZoneName=$DName.Forest
                 
-
+                        Write-Output "checking nuget package existed or not"
                         if (!(Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue -ListAvailable)) 
                         {
+                        Write-Output "installing nuget package inside vm: $env:COMPUTERNAME"
                             Install-PackageProvider -Name nuget -Force
                         }
                         
                         $LoadModule=Get-Module -ListAvailable "Azure*"
                         
                         if(!$LoadModule){
+                        Write-Output "installing azureModule inside vm: $env:COMPUTERNAME"
                         Install-Module AzureRm -AllowClobber -Force
                         }
 
