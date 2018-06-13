@@ -136,16 +136,15 @@
         Write-Log -Message "All Session Host servers of $HostPoolName : `
         $allShslog.name"
 
-
-  try{
-
             $sessionusers=0
             $sessionusers=@()
                           
                 $sid=Get-RdsUserSession -TenantName $tenantname -HostPoolName $HostPoolName
                 $sidlog=$sid | Out-String
+                $rdupname=$sid.UserPrincipalName
+                $rdsid=$sid.SessionId
             Write-Log -Message "Collected all sessions of hostpool $HostPoolName : `
-            $sid.UserPrincipalName, $sid.SessionId"
+            $rdupname, $rdsid"
 
             foreach($sessionid in $sid){
             if($sessionid.UserPrincipalname -ne $null){
@@ -222,7 +221,7 @@
                 $shsDrain=Set-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName -Name $sh -AllowNewSession $false
                 $shsDrainlog=$shsDrain | Out-String
                 Write-Log -Message "Sesssion host server keep in drain mode : `
-                $shsDrain"
+                $shsDrainlog"
                 
                 #Start-Sleep -Seconds 900
                 Remove-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName -Name $sh -Force $true
@@ -319,12 +318,7 @@
                 Remove-AzureRmResource -ResourceId $avset -Force
                 }
                 #>
-        }
-        catch{
-
-        Write-Log -Error $_.Exception.Message
-
-            }
+        
 
                                 $allHosts=Get-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName
                                 if(!$allHosts){
