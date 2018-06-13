@@ -93,90 +93,6 @@ Function Get-RdpSessions
     return $result
 }
 
-
-
-Function Remove-AzureRMVMInstanceResource {
- Param (
-       
-    # The VM name to remove, regex are supported
-    [parameter(mandatory)]
-    [String]$VMName
- )
-
-    # Remove the VM's and then remove the datadisks, osdisk, NICs
-    Get-AzureRmVM | Where-Object {$_.name -eq $VMName}  | foreach {
-        $a=$_
-        $DataDisks = @($_.StorageProfile.DataDisks.Name)
-        $OSDisk = @($_.StorageProfile.OSDisk.Name)
-
-        if ($pscmdlet.ShouldProcess("$($_.Name)", "Removing VM, Disks and NIC: $($_.Name)"))
-        {
-            #Write-Warning -Message "Removing VM: $($_.Name)"
-            $_ | Remove-AzureRmVM -Force -Confirm:$false
-
-            $_.NetworkProfile.NetworkInterfaces | ForEach-Object {
-                $NICName = Split-Path -Path $_.ID -leaf
-                #Write-Warning -Message "Removing NIC: $NICName"
-                #Get-AzureRmNetworkInterface -ResourceGroupName $ResourceGroup -Name $NICName | Remove-AzureRmNetworkInterface -Force
-                Get-AzureRmNetworkInterface | Where-Object {$_.Name -eq $NICName} | Remove-AzureRmNetworkInterface -Force
-            }
-
-            # Support to remove managed disks
-            if($a.StorageProfile.OsDisk.ManagedDisk ) {
-                ($DataDisks + $OSDisk) | ForEach-Object {
-                    #Write-Warning -Message "Removing Disk: $_"
-                    #Get-AzureRmDisk -ResourceGroupName $ResourceGroup -DiskName $_ | Remove-AzureRmDisk -Force
-                }
-            }
-            # Support to remove unmanaged disks (from Storage Account Blob)
-            else {
-                # This assumes that OSDISK and DATADisks are on the same blob storage account
-                # Modify the function if that is not the case.
-                $saname = ($a.StorageProfile.OsDisk.Vhd.Uri -split '\.' | Select -First 1) -split '//' |  Select -Last 1
-                $sa = Get-AzureRmStorageAccount | Where-Object {$_.StorageAccountName -eq $saname}
-        
-                # Remove DATA disks
-                $a.StorageProfile.DataDisks | foreach {
-                    $disk = $_.Vhd.Uri | Split-Path -Leaf
-                    Get-AzureStorageContainer -Name vhds -Context $Sa.Context |
-                    Get-AzureStorageBlob -Blob  $disk |
-                    Remove-AzureStorageBlob  
-                }
-        
-                # Remove OSDisk disk
-                $disk = $a.StorageProfile.OsDisk.Vhd.Uri | Split-Path -Leaf
-                Get-AzureStorageContainer -Name vhds -Context $Sa.Context |
-                Get-AzureStorageBlob -Blob  $disk |
-                Remove-AzureStorageBlob
-                
-                # Remove Boot Diagnostic
-                $diagVMName=0
-                $diag=$_.Name.ToLower()
-                $diagVMName=$diag -replace '[\-]', ''
-                $dCount=$diagVMName.Length
-                            if($dCount -cgt 9){
-                                $digsplt=$diagVMName.substring(0,9)
-                                $diagVMName=$digsplt
-                                }
-                $diagContainerName = ('bootdiagnostics-{0}-{1}' -f $diagVMName, $_.VmId)
-                Set-AzureRmCurrentStorageAccount -Context $sa.Context
-                Remove-AzureStorageContainer -Name $diagContainerName -Force
-                
-
-            }
-            # If you are on the network you can cleanup the Computer Account in AD            
-	        Get-ADComputer -Identity $a.OSProfile.ComputerName | Remove-ADObject -Recursive -confirm:$false
-            #Remove-DnsServerResourceRecord -ZoneName $DomainName -RRType "A" -Name $a.OSProfile.ComputerName -Force -Confirm:$false
-            
-        }#PSCmdlet(ShouldProcess)
-    }
-
-    
-}
-
-
-
-
   try{
 
             $sessionusers=0
@@ -249,6 +165,7 @@ Function Remove-AzureRMVMInstanceResource {
                  throw "Subscription Id $SubscriptionId not in context"
             }
             
+            $avsets=0
             
             foreach($sh in $allcomputers){
                 
@@ -260,9 +177,78 @@ Function Remove-AzureRMVMInstanceResource {
                 Remove-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName -Name $sh -Force $true
                 
                 $VMName=$sh.Split(".")[0]
-                $avset=Get-AzureRmVM | where-object {$_.Name -eq $VMName} | select-Object {$_.AvailabilitySetReference.Id}
+                $avsets+=Get-AzureRmVM | where-object {$_.Name -eq $VMName} | select-Object {$_.AvailabilitySetReference.Id}
                                 
-                Remove-AzureRMVMInstanceResource -VMName $VMName
+                # Remove the VM's and then remove the datadisks, osdisk, NICs
+                Get-AzureRmVM | Where-Object {$_.name -eq $VMName}  | foreach {
+                    $a=$_
+                    $DataDisks = @($_.StorageProfile.DataDisks.Name)
+                    $OSDisk = @($_.StorageProfile.OSDisk.Name)
+
+                    if ($pscmdlet.ShouldProcess("$($_.Name)", "Removing VM, Disks and NIC: $($_.Name)"))
+                    {
+                        #Write-Warning -Message "Removing VM: $($_.Name)"
+                        $_ | Remove-AzureRmVM -Force -Confirm:$false
+
+                        $_.NetworkProfile.NetworkInterfaces | ForEach-Object {
+                            $NICName = Split-Path -Path $_.ID -leaf
+                            #Write-Warning -Message "Removing NIC: $NICName"
+                            #Get-AzureRmNetworkInterface -ResourceGroupName $ResourceGroup -Name $NICName | Remove-AzureRmNetworkInterface -Force
+                            Get-AzureRmNetworkInterface | Where-Object {$_.Name -eq $NICName} | Remove-AzureRmNetworkInterface -Force
+                        }
+
+                        # Support to remove managed disks
+                        if($a.StorageProfile.OsDisk.ManagedDisk ) {
+                            ($DataDisks + $OSDisk) | ForEach-Object {
+                                #Write-Warning -Message "Removing Disk: $_"
+                                #Get-AzureRmDisk -ResourceGroupName $ResourceGroup -DiskName $_ | Remove-AzureRmDisk -Force
+                            }
+                        }
+                        # Support to remove unmanaged disks (from Storage Account Blob)
+                        else {
+                            # This assumes that OSDISK and DATADisks are on the same blob storage account
+                            # Modify the function if that is not the case.
+                            $saname = ($a.StorageProfile.OsDisk.Vhd.Uri -split '\.' | Select -First 1) -split '//' |  Select -Last 1
+                            $sa = Get-AzureRmStorageAccount | Where-Object {$_.StorageAccountName -eq $saname}
+        
+                            # Remove DATA disks
+                            $a.StorageProfile.DataDisks | foreach {
+                                $disk = $_.Vhd.Uri | Split-Path -Leaf
+                                Get-AzureStorageContainer -Name vhds -Context $Sa.Context |
+                                Get-AzureStorageBlob -Blob  $disk |
+                                Remove-AzureStorageBlob  
+                            }
+        
+                            # Remove OSDisk disk
+                            $disk = $a.StorageProfile.OsDisk.Vhd.Uri | Split-Path -Leaf
+                            Get-AzureStorageContainer -Name vhds -Context $Sa.Context |
+                            Get-AzureStorageBlob -Blob  $disk |
+                            Remove-AzureStorageBlob
+                
+                            # Remove Boot Diagnostic
+                            $diagVMName=0
+                            $diag=$_.Name.ToLower()
+                            $diagVMName=$diag -replace '[\-]', ''
+                            $dCount=$diagVMName.Length
+                                        if($dCount -cgt 9){
+                                            $digsplt=$diagVMName.substring(0,9)
+                                            $diagVMName=$digsplt
+                                            }
+                            $diagContainerName = ('bootdiagnostics-{0}-{1}' -f $diagVMName, $_.VmId)
+                            Set-AzureRmCurrentStorageAccount -Context $sa.Context
+                            Remove-AzureStorageContainer -Name $diagContainerName -Force
+                
+
+                        }
+
+                        # If you are on the network you can cleanup the Computer Account in AD            
+	                    Get-ADComputer -Identity $a.OSProfile.ComputerName | Remove-ADObject -Recursive -confirm:$false
+                        #Remove-DnsServerResourceRecord -ZoneName $DomainName -RRType "A" -Name $a.OSProfile.ComputerName -Force -Confirm:$false
+            
+                    }#PSCmdlet(ShouldProcess)
+                }
+                
+
 
                 #$removeVM
                 Invoke-Command -ComputerName $DControllerVM -Credential $domaincredentials -ScriptBlock{
@@ -270,7 +256,9 @@ Function Remove-AzureRMVMInstanceResource {
                 Remove-DnsServerResourceRecord -ZoneName $ZoneName -RRType "A" -Name $VMName -Force -Confirm:$false
                 } -ArgumentList($ZoneName,$VMName)
                 }
+                foreach($avset in $avsets){
                 Remove-AzureRmResource -ResourceId $avset.'$_.AvailabilitySetReference.Id' -Force
+                }
 
     }
         catch{
