@@ -133,8 +133,9 @@
 
         $allshs=Get-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName
         $allShslog=$allshs | Out-String
+        $allshsnames=$allShslog.name
         Write-Log -Message "All Session Host servers of $HostPoolName : `
-        $allShslog.name"
+        $allshsnames"
 
             $sessionusers=0
             $sessionusers=@()
