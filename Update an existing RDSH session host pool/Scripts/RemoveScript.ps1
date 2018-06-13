@@ -57,41 +57,85 @@
                         } until($LoadModule)
 
 
+                Function Write-Log { 
+                    [CmdletBinding()] 
+                    param ( 
+                        [Parameter(Mandatory = $false)] 
+                        [string]$Message,
+                        [Parameter(Mandatory = $false)] 
+                        [string]$Error 
+                    ) 
+     
+                    try { 
+                        $DateTime = Get-Date -Format ‘MM-dd-yy HH:mm:ss’ 
+                        $Invocation = "$($MyInvocation.MyCommand.Source):$($MyInvocation.ScriptLineNumber)" 
+                        if ($Message) {
+                            Add-Content -Value "$DateTime - $Invocation - $Message" -Path "$([environment]::GetEnvironmentVariable('TEMP', 'Machine'))\ScriptLog.log" 
+                        }
+                        else {
+                            Add-Content -Value "$DateTime - $Invocation - $Error" -Path "$([environment]::GetEnvironmentVariable('TEMP', 'Machine'))\ScriptLog.log" 
+                        }
+                    } 
+                    catch { 
+                        Write-Error $_.Exception.Message 
+                    } 
+                }
+
+                Function Get-RdpSessions 
+                {
+                    param(
+                        [string]$computername 
+                    )
+                    $result=0
+                    $result=@()
+                    $processinfo = Get-WmiObject -Query "select * from win32_process where name='explorer.exe'" -ComputerName $computername -ErrorAction SilentlyContinue
+    
+                    foreach($process in $processinfo){
+                    $result+=New-Object -TypeName psobject
+                    $result | Add-Member -MemberType NoteProperty -Name 'Computer' -Value $computername -ErrorAction SilentlyContinue
+                    $result | Add-Member -MemberType NoteProperty -Name 'Loggedon' -Value $Process.GetOwner().User -ErrorAction SilentlyContinue
+                    $result | Add-Member -MemberType NoteProperty -Name 'Sessionid' -Value $Process.sessionid -ErrorAction SilentlyContinue
+                    }
+                    return $result
+                    Write-Log -Message "Return the each session host server accessed info: `
+                    $result"
+                }
 
 
-Import-Module .\PowershellModules\Microsoft.RDInfra.RDPowershell.dll
 
-#AzureLogin Credentials
-$Securepass=ConvertTo-SecureString -String $DelegateAdminpassword -AsPlainText -Force
-$Credentials=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList($DelegateAdminUsername, $Securepass)
+        Import-Module ".\PowershellModules\Microsoft.RDInfra.RDPowershell.dll"
+        
+        #AzureLogin Credentials
+        $Securepass=ConvertTo-SecureString -String $DelegateAdminpassword -AsPlainText -Force
+        $Credentials=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList($DelegateAdminUsername, $Securepass)
 
-#Domain Credentials
-$DAdminSecurepass = ConvertTo-SecureString -String $DomainAdminPassword -AsPlainText -Force
-$domaincredentials = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($DomainAdminUsername, $DAdminSecurepass)
+        #Domain Credentials
+        $DAdminSecurepass = ConvertTo-SecureString -String $DomainAdminPassword -AsPlainText -Force
+        $domaincredentials = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($DomainAdminUsername, $DAdminSecurepass)
 
-    #Setting RDS Context
-    Set-RdsContext -DeploymentUrl $RDBrokerURL -Credential $Credentials
+        #Setting RDS Context
+        $authentication=Set-RdsContext -DeploymentUrl $RDBrokerURL -Credential $Credentials
+        
+        $obj = $authentication | Out-String
+    
+        if ($authentication) {
+            Write-Log -Message "Imported RDMI PowerShell modules successfully"
+            Write-Log -Message "RDMI Authentication successfully Done. Result: `
+       $obj"  
+        }
+        else {
+            Write-Log -Error "RDMI Authentication Failed, Error: `
+       $obj"
+        
+        }
+        
+        
 
+        $allshs=Get-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName
+        $allShslog=$allshs | Out-String
+        Write-Log -Message "All Session Host servers of $HostPoolName : `
+        $allShslog.name"
 
-$allshs=Get-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName
-
-Function Get-RdpSessions 
-{
-    param(
-        [string]$computername 
-    )
-    $result=0
-    $result=@()
-    $processinfo = Get-WmiObject -Query "select * from win32_process where name='explorer.exe'" -ComputerName $computername -ErrorAction SilentlyContinue
-   
-    foreach($process in $processinfo){
-    $result+=New-Object -TypeName psobject
-    $result | Add-Member -MemberType NoteProperty -Name 'Computer' -Value $computername -ErrorAction SilentlyContinue
-    $result | Add-Member -MemberType NoteProperty -Name 'Loggedon' -Value $Process.GetOwner().User -ErrorAction SilentlyContinue
-    $result | Add-Member -MemberType NoteProperty -Name 'Sessionid' -Value $Process.sessionid -ErrorAction SilentlyContinue
-    }
-    return $result
-}
 
   try{
 
@@ -99,7 +143,10 @@ Function Get-RdpSessions
             $sessionusers=@()
                           
                 $sid=Get-RdsUserSession -TenantName $tenantname -HostPoolName $HostPoolName
-            
+                $sidlog=$sid | Out-String
+            Write-Log -Message "Collected all sessions of hostpool $HostPoolName : `
+            $sid.UserPrincipalName, $sid.SessionId"
+
             foreach($sessionid in $sid){
             if($sessionid.UserPrincipalname -ne $null){
             $UPname=$sessionid.UserPrincipalname
@@ -142,7 +189,8 @@ Function Get-RdpSessions
 
     
     $allcomputers=$computers | select -Unique
-    
+    Write-Log -Message "Collected old vms of Hostpool $HostPoolName : `
+    $allcomputers"
                         #Get Domaincontroller VMname
 
 
@@ -159,10 +207,11 @@ Function Get-RdpSessions
             if ($loginResult.Context.Subscription.Id -eq $SubscriptionId)
             {
                  $success=$true
+                 Write-Log -Message "Successfully logged into AzureRM"
             }
             else 
             {
-                 throw "Subscription Id $SubscriptionId not in context"
+                 Write-Log -Error "Subscription Id $SubscriptionId not in context"
             }
             
             
@@ -170,10 +219,14 @@ Function Get-RdpSessions
             foreach($sh in $allcomputers){
                
                 # setting rdsh vm in drain mode
-                Set-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName -Name $sh -AllowNewSession $false
+                $shsDrain=Set-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName -Name $sh -AllowNewSession $false
+                $shsDrainlog=$shsDrain | Out-String
+                Write-Log -Message "Sesssion host server keep in drain mode : `
+                $shsDrain"
                 
                 #Start-Sleep -Seconds 900
                 Remove-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName -Name $sh -Force $true
+                Write-Log -Message "Successfully $sh removed from hostpool"
                 
                 $VMName=$sh.Split(".")[0]
                 
@@ -185,11 +238,12 @@ Function Get-RdpSessions
                     $a=$_
                     $DataDisks = @($_.StorageProfile.DataDisks.Name)
                     $OSDisk = @($_.StorageProfile.OSDisk.Name)
-
+                    Write-Log -Message "Removing $VMName VM from Azure with all resources"
                     #if ($pscmdlet.ShouldProcess("$($_.Name)", "Removing VM, Disks and NIC: $($_.Name)"))
                     #{
                         #Write-Warning -Message "Removing VM: $($_.Name)"
                         $_ | Remove-AzureRmVM -Force -Confirm:$false
+                        Write-Log -Message "Successfully removed VM from Azure"
 
                         $_.NetworkProfile.NetworkInterfaces | ForEach-Object {
                             $NICName = Split-Path -Path $_.ID -leaf
@@ -197,6 +251,7 @@ Function Get-RdpSessions
                             #Get-AzureRmNetworkInterface -ResourceGroupName $ResourceGroup -Name $NICName | Remove-AzureRmNetworkInterface -Force
                             Get-AzureRmNetworkInterface | Where-Object {$_.Name -eq $NICName} | Remove-AzureRmNetworkInterface -Force
                         }
+                        Write-Log -Message "Successfully removed $VMName vm NIC"
 
                         # Support to remove managed disks
                         if($a.StorageProfile.OsDisk.ManagedDisk ) {
@@ -238,12 +293,13 @@ Function Get-RdpSessions
                             $diagContainerName = ('bootdiagnostics-{0}-{1}' -f $diagVMName, $_.VmId)
                             Set-AzureRmCurrentStorageAccount -Context $sa.Context
                             Remove-AzureStorageContainer -Name $diagContainerName -Force
-                
+                            Write-Log -Message "Successfully removed storage vhd and boot diagnostic"
 
                         }
 
                         # If you are on the network you can cleanup the Computer Account in AD            
 	                    Get-ADComputer -Identity $a.OSProfile.ComputerName | Remove-ADObject -Recursive -confirm:$false
+                        Write-Log -Message "Successfully removed $vmname from domaincontroller "
                         #Remove-DnsServerResourceRecord -ZoneName $DomainName -RRType "A" -Name $a.OSProfile.ComputerName -Force -Confirm:$false
             
                     #}#PSCmdlet(ShouldProcess)
@@ -257,6 +313,7 @@ Function Get-RdpSessions
                 Remove-DnsServerResourceRecord -ZoneName $ZoneName -RRType "A" -Name $VMName -Force -Confirm:$false
                 } -ArgumentList($ZoneName,$VMName)
                 }
+                Write-Log -Message "successfully removed dns record of $VMName"
                 <#$avsets=$avsets | Select-Object -Unique
                 foreach($avset in $avsets){
                 Remove-AzureRmResource -ResourceId $avset -Force
@@ -265,6 +322,7 @@ Function Get-RdpSessions
         }
         catch{
 
+        Write-Log -Error $_.Exception.Message
 
             }
 
@@ -282,6 +340,8 @@ Function Get-RdpSessions
                                 }
                                 $SessionHostName = (Get-WmiObject win32_computersystem).DNSHostName + "." + (Get-WmiObject win32_computersystem).Domain
                                 $Registered = Export-RdsRegistrationInfo -TenantName $TenantName -HostPoolName $HostPoolName
+                                $reglog = $registered | Out-String
+                                Write-Log -Message "Exported Rds RegisterationInfo into variable 'Registered': $reglog"
                                 $systemdate = (GET-DATE)
                                             $Tokenexpiredate = $Registered.ExpirationUtc
                                             $difference = $Tokenexpiredate - $systemdate
