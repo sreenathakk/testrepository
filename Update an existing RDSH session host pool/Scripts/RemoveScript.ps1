@@ -130,15 +130,15 @@ Function Remove-AzureRMVMInstanceResource {
                 Remove-AzureStorageBlob
                 
                 # Remove Boot Diagnostic
-                $diagvmname=0
+                $diagVMName=0
                 $diag=$_.Name.ToLower()
-                $diagvmname=$diag -replace '[\-]', ''
-                $dcount=$diagvmname.Length
-                            if($dcount -cgt 9){
-                                $digsplt=$diagvmname.split("0")[0]
-                                $diagvmname=$digsplt
+                $diagVMName=$diag -replace '[\-]', ''
+                $dCount=$diagVMName.Length
+                            if($dCount -cgt 9){
+                                $digsplt=$diagVMName.substring(0,9)
+                                $diagVMName=$digsplt
                                 }
-                $diagContainerName = ('bootdiagnostics-{0}-{1}' -f $diagvmname, $_.VmId)
+                $diagContainerName = ('bootdiagnostics-{0}-{1}' -f $diagVMName, $_.VmId)
                 Set-AzureRmCurrentStorageAccount -Context $sa.Context
                 Remove-AzureStorageContainer -Name $diagContainerName -Force
                 
