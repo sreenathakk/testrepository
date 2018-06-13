@@ -152,7 +152,7 @@ Function Get-RdpSessions
                 
                 
             #Import-Module AzureRM.Resources
-            Import-Module Azurerm
+            #Import-Module Azurerm
             $AzSecurepass=ConvertTo-SecureString -String $DelegateAdminpassword -AsPlainText -Force
             $AzCredentials=New-Object System.Management.Automation.PSCredential($DelegateAdminUsername, $AzSecurepass)
             $loginResult=Login-AzureRmAccount -SubscriptionId $SubscriptionId  -Credential $AzCredentials
@@ -170,11 +170,10 @@ Function Get-RdpSessions
             foreach($sh in $allcomputers){
                
                 # setting rdsh vm in drain mode
-                #Set-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName -Name $sh -AllowNewSession $false
+                Set-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName -Name $sh -AllowNewSession $false
                 
                 #Start-Sleep -Seconds 900
-                
-                #Remove-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName -Name $sh -Force $true
+                Remove-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName -Name $sh -Force $true
                 
                 $VMName=$sh.Split(".")[0]
                 
