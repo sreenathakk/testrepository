@@ -165,28 +165,30 @@ Function Get-RdpSessions
                  throw "Subscription Id $SubscriptionId not in context"
             }
             
-            $avsets=0
+            
             
             foreach($sh in $allcomputers){
-                
+               
                 # setting rdsh vm in drain mode
-                Set-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName -Name $sh -AllowNewSession $false
+                #Set-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName -Name $sh -AllowNewSession $false
                 
                 #Start-Sleep -Seconds 900
                 
-                Remove-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName -Name $sh -Force $true
+                #Remove-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName -Name $sh -Force $true
                 
                 $VMName=$sh.Split(".")[0]
-                $avsets+=Get-AzureRmVM | where-object {$_.Name -eq $VMName} | select-Object {$_.AvailabilitySetReference.Id}
-                                
+                
+                #[PSObject]$availibilityset=Get-AzureRmVM | where-object {$_.Name -eq $VMName} | select-Object {$_.AvailabilitySetReference.Id} | Out-String
+                #$av=$availibilityset.'$_.AvailabilitySetReference.Id'
+                #$avsets+=$av
                 # Remove the VM's and then remove the datadisks, osdisk, NICs
                 Get-AzureRmVM | Where-Object {$_.name -eq $VMName}  | foreach {
                     $a=$_
                     $DataDisks = @($_.StorageProfile.DataDisks.Name)
                     $OSDisk = @($_.StorageProfile.OSDisk.Name)
 
-                    if ($pscmdlet.ShouldProcess("$($_.Name)", "Removing VM, Disks and NIC: $($_.Name)"))
-                    {
+                    #if ($pscmdlet.ShouldProcess("$($_.Name)", "Removing VM, Disks and NIC: $($_.Name)"))
+                    #{
                         #Write-Warning -Message "Removing VM: $($_.Name)"
                         $_ | Remove-AzureRmVM -Force -Confirm:$false
 
@@ -245,7 +247,7 @@ Function Get-RdpSessions
 	                    Get-ADComputer -Identity $a.OSProfile.ComputerName | Remove-ADObject -Recursive -confirm:$false
                         #Remove-DnsServerResourceRecord -ZoneName $DomainName -RRType "A" -Name $a.OSProfile.ComputerName -Force -Confirm:$false
             
-                    }#PSCmdlet(ShouldProcess)
+                    #}#PSCmdlet(ShouldProcess)
                 }
                 
 
@@ -256,44 +258,45 @@ Function Get-RdpSessions
                 Remove-DnsServerResourceRecord -ZoneName $ZoneName -RRType "A" -Name $VMName -Force -Confirm:$false
                 } -ArgumentList($ZoneName,$VMName)
                 }
+                <#$avsets=$avsets | Select-Object -Unique
                 foreach($avset in $avsets){
-                Remove-AzureRmResource -ResourceId $avset.'$_.AvailabilitySetReference.Id' -Force
+                Remove-AzureRmResource -ResourceId $avset -Force
                 }
-
-    }
+                #>
+        }
         catch{
 
 
             }
 
-$allHosts=Get-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName
-if(!$allHosts){
-$CheckRegistery = Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\RDInfraAgent" -ErrorAction SilentlyContinue
-if (!$CheckRegistery) {
-$HPName = Get-RdsHostPool -TenantName $TenantName -Name $HostPoolName -ErrorAction SilentlyContinue
-if ($HPName) {
-if ($HPName.UseReverseConnect -eq $False) {
+                                $allHosts=Get-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName
+                                if(!$allHosts){
+                                $CheckRegistery = Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\RDInfraAgent" -ErrorAction SilentlyContinue
+                                if (!$CheckRegistery) {
+                                $HPName = Get-RdsHostPool -TenantName $TenantName -Name $HostPoolName -ErrorAction SilentlyContinue
+                                if ($HPName) {
+                                if ($HPName.UseReverseConnect -eq $False) {
                 
-                Set-RdsHostPool -TenantName $TenantName -Name $HostPoolName -UseReverseConnect $true
-            }
+                                                Set-RdsHostPool -TenantName $TenantName -Name $HostPoolName -UseReverseConnect $true
+                                            }
 
-}
-$SessionHostName = (Get-WmiObject win32_computersystem).DNSHostName + "." + (Get-WmiObject win32_computersystem).Domain
-$Registered = Export-RdsRegistrationInfo -TenantName $TenantName -HostPoolName $HostPoolName
-$systemdate = (GET-DATE)
-            $Tokenexpiredate = $Registered.ExpirationUtc
-            $difference = $Tokenexpiredate - $systemdate
+                                }
+                                $SessionHostName = (Get-WmiObject win32_computersystem).DNSHostName + "." + (Get-WmiObject win32_computersystem).Domain
+                                $Registered = Export-RdsRegistrationInfo -TenantName $TenantName -HostPoolName $HostPoolName
+                                $systemdate = (GET-DATE)
+                                            $Tokenexpiredate = $Registered.ExpirationUtc
+                                            $difference = $Tokenexpiredate - $systemdate
             
-            if ($difference -lt 0 -or $Registered -eq 'null') {
+                                            if ($difference -lt 0 -or $Registered -eq 'null') {
                 
-                $Registered = New-RdsRegistrationInfo -TenantName $TenantName -HostPoolName $HostPoolName -ExpirationHours $Hours
-            }
+                                                $Registered = New-RdsRegistrationInfo -TenantName $TenantName -HostPoolName $HostPoolName -ExpirationHours $Hours
+                                            }
 
-            $DAgentInstall = .\DeployAgent.ps1 -ComputerName $SessionHostName -AgentInstaller ".\RDInfraAgentInstall\Microsoft.RDInfra.RDAgent.Installer-x64.msi" -SxSStackInstaller ".\RDInfraSxSStackInstall\Microsoft.RDInfra.StackSxS.Installer-x64.msi" -AdminCredentials $domaincredentials -TenantName $TenantName -PoolName $HostPoolName -RegistrationToken $Registered.Token -StartAgent $true
-            $addRdsh = Set-RdsSessionHost -TenantName $TenantName -HostPoolName $HostPoolName -Name $SessionHostName -AllowNewSession $true
-}
-}
-else
-{
-Write-Output $allhosts.name
-}
+                                            $DAgentInstall = .\DeployAgent.ps1 -ComputerName $SessionHostName -AgentInstaller ".\RDInfraAgentInstall\Microsoft.RDInfra.RDAgent.Installer-x64.msi" -SxSStackInstaller ".\RDInfraSxSStackInstall\Microsoft.RDInfra.StackSxS.Installer-x64.msi" -AdminCredentials $domaincredentials -TenantName $TenantName -PoolName $HostPoolName -RegistrationToken $Registered.Token -StartAgent $true
+                                            $addRdsh = Set-RdsSessionHost -TenantName $TenantName -HostPoolName $HostPoolName -Name $SessionHostName -AllowNewSession $true
+                                }
+                                }
+                                else
+                                {
+                                Write-Output $allhosts.name
+                                }
