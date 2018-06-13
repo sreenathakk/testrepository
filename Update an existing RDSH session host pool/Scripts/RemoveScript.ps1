@@ -39,6 +39,26 @@
     Set-Location "C:\DeployAgent"
     #Write-Log -Message "Setting up the location of Deployagent folder"
 
+
+                do{
+                        Write-Output "checking nuget package existed or not"
+                        if (!(Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue -ListAvailable)) 
+                        {
+                        Write-Output "installing nuget package inside vm: $env:COMPUTERNAME"
+                            Install-PackageProvider -Name nuget -Force
+                        }
+                        
+                        $LoadModule=Get-Module -ListAvailable "Azure*"
+                        
+                        if(!$LoadModule){
+                        Write-Output "installing azureModule inside vm: $env:COMPUTERNAME"
+                        Install-Module AzureRm -AllowClobber -Force
+                        }
+                        } until($LoadModule)
+
+
+
+
 Import-Module .\PowershellModules\Microsoft.RDInfra.RDPowershell.dll
 
 #AzureLogin Credentials
@@ -214,23 +234,9 @@ Function Remove-AzureRMVMInstanceResource {
                         $DControllerVM=$DName.Name
                         $ZoneName=$DName.Forest
                 
-                do{
-                        Write-Output "checking nuget package existed or not"
-                        if (!(Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue -ListAvailable)) 
-                        {
-                        Write-Output "installing nuget package inside vm: $env:COMPUTERNAME"
-                            Install-PackageProvider -Name nuget -Force
-                        }
-                        
-                        $LoadModule=Get-Module -ListAvailable "Azure*"
-                        
-                        if(!$LoadModule){
-                        Write-Output "installing azureModule inside vm: $env:COMPUTERNAME"
-                        Install-Module AzureRm -AllowClobber -Force
-                        }
-                        } until($LoadModule)
+                
             #Import-Module AzureRM.Resources
-            #Import-Module Azurerm
+            Import-Module Azurerm
             $AzSecurepass=ConvertTo-SecureString -String $DelegateAdminpassword -AsPlainText -Force
             $AzCredentials=New-Object System.Management.Automation.PSCredential($DelegateAdminUsername, $AzSecurepass)
             $loginResult=Login-AzureRmAccount -SubscriptionId $SubscriptionId  -Credential $AzCredentials
