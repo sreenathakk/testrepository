@@ -19,23 +19,32 @@
 
     [Parameter(mandatory = $false)]
     [string]$FileURI,
+    
+    [Parameter(mandatory = $false)]
+    [string]$userLogoffTimeoutInMinutes,
+
+    [Parameter(mandatory = $false)]
+    [string]$userNotificationMessege,
+
+    [Parameter(mandatory = $true)]
+    [string]$deallocateVMs,
 
     [Parameter(mandatory = $true)]
     [string]$DomainAdminUsername,
-
+    
     [Parameter(mandatory = $true)]
     [string]$DomainAdminPassword
 )
 
 
     Invoke-WebRequest -Uri $fileURI -OutFile "C:\DeployAgent.zip"
-    #Write-Log -Message "Downloaded DeployAgent.zip into this location C:\"
+    Write-Log -Message "Downloaded DeployAgent.zip into this location C:\"
 
     #Creating a folder inside rdsh vm for extracting deployagent zip file
     New-Item -Path "C:\DeployAgent" -ItemType directory -Force -ErrorAction SilentlyContinue
     #Write-Log -Message "Created a new folder which is 'DeployAgent' inside VM"
     Expand-Archive "C:\DeployAgent.zip" -DestinationPath "C:\DeployAgent" -ErrorAction SilentlyContinue
-   #Write-Log -Message "Extracted the 'Deployagent.zip' file into 'C:\Deployagent' folder inside VM"
+    #Write-Log -Message "Extracted the 'Deployagent.zip' file into 'C:\Deployagent' folder inside VM"
     Set-Location "C:\DeployAgent"
     #Write-Log -Message "Setting up the location of Deployagent folder"
 
@@ -129,13 +138,13 @@
         
         }
         
-        
+       
 
         $allshs=Get-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName
-        $allShslog=$allshs | Out-String
-        $allshsnames=$allShslog.name
-        Write-Log -Message "All Session Host servers of $HostPoolName : `
-        $allshsnames"
+        $allshslog=$allshs.name | Out-String
+        
+        Write-Log -Message "All Session Host servers of $HostPoolName :`
+        $allshslog"
 
             $sessionusers=0
             $sessionusers=@()
@@ -180,7 +189,7 @@
                         
                         $computers+=$ci.computer
                         
-                        #Send-RdsUserSessionMessage -TenantName $tenantname -HostPoolName $HostPoolName -SessionHostName $ci.computer -SessionId $ci.Sessionid -MessageTitle $MessageTitle -MessageBody $MessageBody -NoConfirm $false -ErrorAction SilentlyContinue
+                        #Send-RdsUserSessionMessage -TenantName $tenantname -HostPoolName $HostPoolName -SessionHostName $ci.computer -SessionId $ci.Sessionid -MessageTitle $MessageTitle -MessageBody $userNotificationMessege -NoConfirm $false -ErrorAction SilentlyContinue
                         }
                       }
                   }
@@ -224,15 +233,15 @@
                 Write-Log -Message "Sesssion host server keep in drain mode : `
                 $shsDrainlog"
                 
-                #Start-Sleep -Seconds 900
+                Start-Sleep -Seconds $userLogoffTimeoutInMinutes
+
                 Remove-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName -Name $sh -Force $true
                 Write-Log -Message "Successfully $sh removed from hostpool"
                 
                 $VMName=$sh.Split(".")[0]
                 
-                #[PSObject]$availibilityset=Get-AzureRmVM | where-object {$_.Name -eq $VMName} | select-Object {$_.AvailabilitySetReference.Id} | Out-String
-                #$av=$availibilityset.'$_.AvailabilitySetReference.Id'
-                #$avsets+=$av
+                if($deallocateVMs -eq "Deallocated"){
+                
                 # Remove the VM's and then remove the datadisks, osdisk, NICs
                 Get-AzureRmVM | Where-Object {$_.name -eq $VMName}  | foreach {
                     $a=$_
@@ -297,50 +306,60 @@
 
                         }
 
-                        # If you are on the network you can cleanup the Computer Account in AD            
-	                    #Get-ADComputer -Identity $a.OSProfile.ComputerName | Remove-ADObject -Recursive -confirm:$false
-                        #Write-Log -Message "Successfully removed $vmname from domaincontroller "
-                        #Remove-DnsServerResourceRecord -ZoneName $DomainName -RRType "A" -Name $a.OSProfile.ComputerName -Force -Confirm:$false
-            
-                    #}#PSCmdlet(ShouldProcess)
+                        $avSet=Get-AzureRmVM | Where-Object {$_.Name -eq $VMName} | Remove-AzureRmAvailabilitySet -Force
+                        
                 }
                 
-
-
-                #$removeVM
+                #Removing VM from domain controller and DNS Record
                 Invoke-Command -ComputerName $DControllerVM -Credential $domaincredentials -ScriptBlock{
                 Param($ZoneName,$VMName)
                 Get-ADComputer -Identity $VMName | Remove-ADObject -Recursive -confirm:$false
-                
                 Remove-DnsServerResourceRecord -ZoneName $ZoneName -RRType "A" -Name $VMName -Force -Confirm:$false
-				
                 } -ArgumentList($ZoneName,$VMName)
-                }
-				Write-Log -Message "Successfully removed $VMName from domaincontroller "
+                
+                Write-Log -Message "Successfully removed $VMName from domaincontroller"
                 Write-Log -Message "successfully removed dns record of $VMName"
-                <#$avsets=$avsets | Select-Object -Unique
-                foreach($avset in $avsets){
-                Remove-AzureRmResource -ResourceId $avset -Force
+                
                 }
-                #>
-        
-
-                                $allHosts=Get-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName
-                                if(!$allHosts){
-                                $CheckRegistery = Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\RDInfraAgent" -ErrorAction SilentlyContinue
-                                if (!$CheckRegistery) {
-                                $HPName = Get-RdsHostPool -TenantName $TenantName -Name $HostPoolName -ErrorAction SilentlyContinue
+                else{
+                $vmProvisioning=Get-AzureRmVM | Where-Object {$_.Name -eq $VMName} | Stop-AzureRmVM -Force
+                            
+                            if($vmProvisioning.Status -eq "Succeeded"){
+                            write-log -Message "VM has been stopped: $VMName"
+                            }
+                            else
+                            {
+                            write-log -Error "$VMName VM has not been stopped"
+                            }
+                }
+                }
+                
+                $allHosts=Get-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName
+                
+                if(!$allHosts)
+                {
+                    
+                    $CheckRegistery = Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\RDInfraAgent" -ErrorAction SilentlyContinue
+                
+                if (!$CheckRegistery) {
+                
+                $HPName = Get-RdsHostPool -TenantName $TenantName -Name $HostPoolName -ErrorAction SilentlyContinue
+                               
                                 if ($HPName) {
+                                
                                 if ($HPName.UseReverseConnect -eq $False) {
                 
                                                 Set-RdsHostPool -TenantName $TenantName -Name $HostPoolName -UseReverseConnect $true
                                             }
 
                                 }
+                                
                                 $SessionHostName = (Get-WmiObject win32_computersystem).DNSHostName + "." + (Get-WmiObject win32_computersystem).Domain
+                                
                                 $Registered = Export-RdsRegistrationInfo -TenantName $TenantName -HostPoolName $HostPoolName
                                 $reglog = $registered | Out-String
                                 Write-Log -Message "Exported Rds RegisterationInfo into variable 'Registered': $reglog"
+                                
                                 $systemdate = (GET-DATE)
                                             $Tokenexpiredate = $Registered.ExpirationUtc
                                             $difference = $Tokenexpiredate - $systemdate
@@ -356,5 +375,5 @@
                                 }
                                 else
                                 {
-                                Write-Output $allhosts.name
+                                Write-log -Message "RDSH vms not removed from hostpool: $HostpoolName"
                                 }
