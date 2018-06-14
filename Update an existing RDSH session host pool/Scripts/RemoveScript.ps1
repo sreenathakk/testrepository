@@ -298,8 +298,8 @@
                         }
 
                         # If you are on the network you can cleanup the Computer Account in AD            
-	                    Get-ADComputer -Identity $a.OSProfile.ComputerName | Remove-ADObject -Recursive -confirm:$false
-                        Write-Log -Message "Successfully removed $vmname from domaincontroller "
+	                    #Get-ADComputer -Identity $a.OSProfile.ComputerName | Remove-ADObject -Recursive -confirm:$false
+                        #Write-Log -Message "Successfully removed $vmname from domaincontroller "
                         #Remove-DnsServerResourceRecord -ZoneName $DomainName -RRType "A" -Name $a.OSProfile.ComputerName -Force -Confirm:$false
             
                     #}#PSCmdlet(ShouldProcess)
@@ -310,6 +310,8 @@
                 #$removeVM
                 Invoke-Command -ComputerName $DControllerVM -Credential $domaincredentials -ScriptBlock{
                 Param($ZoneName,$VMName)
+                Get-ADComputer -Identity $VMName | Remove-ADObject -Recursive -confirm:$false
+                Write-Log -Message "Successfully removed $VMName from domaincontroller "
                 Remove-DnsServerResourceRecord -ZoneName $ZoneName -RRType "A" -Name $VMName -Force -Confirm:$false
                 } -ArgumentList($ZoneName,$VMName)
                 }
