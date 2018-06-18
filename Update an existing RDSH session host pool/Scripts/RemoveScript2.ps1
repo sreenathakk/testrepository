@@ -130,7 +130,7 @@
              $shsNames=@()
              
              $rdsUserSessions=Get-RdsUserSession -TenantName $TenantName -HostPoolName $HostPoolName
-             
+             if($rdsUserSessions){
              foreach($rdsUserSession in $rdsUserSessions){
              
              $sessionId=$rdsUserSession.SessionId
@@ -146,6 +146,13 @@
              Write-log -message "Sent a rdsusersesionmessage to $username and sessionid was $sessionId"
              
              }
+             }
+              else
+             {
+             $shName=$allshs.SessionHostName
+             Write-Log -Message "Sessions not there in $shName session host vm"
+             $shsNames+=$shName
+                }
     
             $allShsNames=$shsNames | select -Unique
             Write-Log -Message "Collected old sessionhosts of Hostpool $HostPoolName : `
@@ -196,8 +203,7 @@
                     $DataDisks = @($_.StorageProfile.DataDisks.Name)
                     $OSDisk = @($_.StorageProfile.OSDisk.Name)
                     Write-Log -Message "Removing $VMName VM from Azure with all resources"
-                    #if ($pscmdlet.ShouldProcess("$($_.Name)", "Removing VM, Disks and NIC: $($_.Name)"))
-                    #{
+                   
                         #Write-Warning -Message "Removing VM: $($_.Name)"
                         $_ | Remove-AzureRmVM -Force -Confirm:$false
                         Write-Log -Message "Successfully removed VM from Azure"
@@ -317,7 +323,7 @@
                                                 $Registered = New-RdsRegistrationInfo -TenantName $TenantName -HostPoolName $HostPoolName -ExpirationHours $Hours
                                             }
 
-                                            $DAgentInstall = .\DeployAgent.ps1 -ComputerName $SessionHostName -AgentInstaller ".\RDInfraAgentInstall\Microsoft.RDInfra.RDAgent.Installer-x64.msi" -SxSStackInstaller ".\RDInfraSxSStackInstall\Microsoft.RDInfra.StackSxS.Installer-x64.msi" -AdminCredentials $domaincredentials -TenantName $TenantName -PoolName $HostPoolName -RegistrationToken $Registered.Token -StartAgent $true
+                                            $DAgentInstall = .\DeployAgent.ps1 -ComputerName $SessionHostName -AgentBootServiceInstaller ".\RDAgentBootLoaderInstall\Microsoft.RDInfra.RDAgentBootLoader.Installer-x64.msi" -AgentInstaller ".\RDInfraAgentInstall\Microsoft.RDInfra.RDAgent.Installer-x64.msi" -SxSStackInstaller ".\RDInfraSxSStackInstall\Microsoft.RDInfra.StackSxS.Installer-x64.msi" -AdminCredentials $domaincredentials -TenantName $TenantName -PoolName $HostPoolName -RegistrationToken $Registered.Token -StartAgent $true
                                             $addRdsh = Set-RdsSessionHost -TenantName $TenantName -HostPoolName $HostPoolName -Name $SessionHostName -AllowNewSession $true
                                 }
                                 }
