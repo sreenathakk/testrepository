@@ -174,7 +174,7 @@
             
             
             foreach($sh in $allShsNames){
-               $sh="msftrdsh-2.contosordmi.com"
+               
                 # setting rdsh vm in drain mode
                 $shsDrain=Set-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName -Name $sh -AllowNewSession $false
                 $shsDrainlog=$shsDrain | Out-String
