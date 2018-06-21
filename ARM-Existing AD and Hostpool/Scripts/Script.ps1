@@ -103,34 +103,15 @@ try {
     Write-Log -Message "Checking whether VM was Registered with RDInfraAgent or not"
 
 
-
-
-
-
     if ($CheckRegistery) {
         Write-Log -Message "VM was already registered with RDInfraAgent, script execution was stopped"
-
-
-
-
-
-
-
 
     }
     else {
 
 
-
         Write-Log -Message "VM was not registered with RDInfraAgent, script is executing"
     }
-
-
-
-
-
-
-
 
 
 
@@ -206,11 +187,6 @@ try {
         $DAgentInstall"
         }
 
-
-
-
-
-
         else {
             Write-Log -Message "Hostpool is not existed inside tenant: $TenantName"
 
@@ -243,13 +219,6 @@ try {
         $poolName = $addRdsh.hostpoolname | Out-String -Stream
         Write-Log -Message "Successfully added $rdshName VM to $poolName"
     }
-
-
-
-
-
-
-
 
 
 }
