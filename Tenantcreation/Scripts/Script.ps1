@@ -76,7 +76,7 @@ $newRdsTenant=New-RdsTenant -Name $TenantName -AadTenantId $AadTenantId -Friendl
 $newRDSHostPool=New-RdsHostPool -TenantName $newRdsTenant.TenantName  -Name $HostPoolName -Description $HostPoolDescription -FriendlyName $HostPoolFriendlyName
 $SecurePass=ConvertTo-SecureString -String $vmPassword -AsPlainText -Force
 $localcred=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($vmUsername, $Securepass)
-Invoke-Command -ComputerName localhost -Credential $localcred -ScriptBlock{
+Invoke-Command -ComputerName "MyVM" -Credential $localcred -ScriptBlock{
 param($SubscriptionId,$Username,$Password,$ResourceGroupName)
 Set-Location "C:\PSModules"
 .\RemoveRG.ps1 -SubscriptionId $SubscriptionId -Username $Username -Password $Password -ResourceGroupName $ResourceGroupName
