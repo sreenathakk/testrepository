@@ -15,6 +15,10 @@
     [ValidateNotNullOrEmpty()]
     [string] $AadTenantId,
 
+    [Parameter(Mandatory=$True)]
+    [ValidateNotNullOrEmpty()]
+    [string] $SubscriptionId,
+
     [Parameter(Mandatory=$false)]
     [string] $FriendlyName,
 
@@ -77,7 +81,7 @@ Remove-Item -Path "C:\PowershellModules" -Recurse -Force
 $SecurePass=ConvertTo-SecureString -String $vmPassword -AsPlainText -Force
 $localcred=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($vmUsername, $Securepass)
 Invoke-Command -ComputerName localhost -Credential $localcred -ScriptBlock{
-param($AadTenantId,$Username,$Password,$ResourceGroupName)
+param($SubscriptionId,$Username,$Password,$ResourceGroupName)
 cd "C:\PSModules"
 .\RemoveRG.ps1 -AadTenantId $AadTenantId -Username $Username -Password $Password -ResourceGroupName $ResourceGroupName
-} -ArgumentList($AadTenantId,$Username,$Password,$ResourceGroupName) -AsJob
+} -ArgumentList($SubscriptionId,$Username,$Password,$ResourceGroupName)
