@@ -184,10 +184,15 @@
                  Write-Log -Error "Subscription Id $SubscriptionId not in context"
             }
             
-            
+                <# $convertSeconds=$userLogoffTimeoutInMinutes * 60
+                   Start-Sleep -Seconds $convertSeconds #>
             
             foreach($sh in $allShsNames){
                
+                $VMName=$sh.Split(".")[0]
+                
+                if($deallocateVMs -eq "Deallocated"){
+
                 # setting rdsh vm in drain mode
                 $shsDrain=Set-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName -Name $sh -AllowNewSession $false
                 $shsDrainlog=$shsDrain | Out-String
@@ -200,9 +205,7 @@
                 Remove-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName -Name $sh -Force $true
                 Write-Log -Message "Successfully $sh removed from hostpool"
                 
-                $VMName=$sh.Split(".")[0]
                 
-                if($deallocateVMs -eq "Deallocated"){
                 
                 # Remove the VM's and then remove the datadisks, osdisk, NICs
                 Get-AzureRmVM | Where-Object {$_.name -eq $VMName}  | foreach {
@@ -282,8 +285,11 @@
                 Write-Log -Message "successfully removed dns record of $VMName"
                 
                 }
+                
                 else{
-                $vmProvisioning=Get-AzureRmVM | Where-Object {$_.Name -eq $VMName} | Stop-AzureRmVM -Force
+                $convertSeconds=$userLogoffTimeoutInMinutes * 60
+                Start-Sleep -Seconds $convertSeconds
+                            $vmProvisioning=Get-AzureRmVM | Where-Object {$_.Name -eq $VMName} | Stop-AzureRmVM -Force
                             
                             if($vmProvisioning.Status -eq "Succeeded"){
                             write-log -Message "VM has been stopped: $VMName"
@@ -321,20 +327,77 @@
                                 $reglog = $registered | Out-String
                                 Write-Log -Message "Exported Rds RegisterationInfo into variable 'Registered': $reglog"
                                 
-                                $systemdate = (GET-DATE)
+                                          
+                                            $systemdate = (GET-DATE)
                                             $Tokenexpiredate = $Registered.ExpirationUtc
                                             $difference = $Tokenexpiredate - $systemdate
-            
+                                            write-log -Message "Calculating date and time whether expired or not? with system date and time"
                                             if ($difference -lt 0 -or $Registered -eq 'null') {
-                
+                                                write-log -Message "Registerationinfo was expired, now again creating new registeration info with hours $Hours"
                                                 $Registered = New-RdsRegistrationInfo -TenantName $TenantName -HostPoolName $HostPoolName -ExpirationHours $Hours
+                                            }
+                                            else {
+
+                                                $reglogexpired = $Tokenexpiredate | Out-String -Stream
+                                                Write-Log -Message "Registerationinfo is not expired, expired in $reglogexpired"
                                             }
 
                                             $DAgentInstall = .\DeployAgent.ps1 -ComputerName $SessionHostName -AgentBootServiceInstaller ".\RDAgentBootLoaderInstall\Microsoft.RDInfra.RDAgentBootLoader.Installer-x64.msi" -AgentInstaller ".\RDInfraAgentInstall\Microsoft.RDInfra.RDAgent.Installer-x64.msi" -SxSStackInstaller ".\RDInfraSxSStackInstall\Microsoft.RDInfra.StackSxS.Installer-x64.msi" -AdminCredentials $domaincredentials -TenantName $TenantName -PoolName $HostPoolName -RegistrationToken $Registered.Token -StartAgent $true
+                                            Write-Log -Message "DeployAgent Script was successfully executed and installed RDAgent, sidebyside inside VM for new $HName `
+                                            $DAgentInstall"
+                                            
                                             $addRdsh = Set-RdsSessionHost -TenantName $TenantName -HostPoolName $HostPoolName -Name $SessionHostName -AllowNewSession $true
+                                            $rdshName = $addRdsh.name | Out-String -Stream
+                                            $poolName = $addRdsh.hostpoolname | Out-String -Stream
+                                            Write-Log -Message "Successfully added $rdshName VM to $poolName"
                                 }
                                 }
                                 else
                                 {
                                 Write-log -Message "RDSH vms not removed from hostpool: $HostpoolName"
+                                $CheckRegistery = Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\RDInfraAgent" -ErrorAction SilentlyContinue
+                
+                                if (!$CheckRegistery) {
+                
+                                $HPName = Get-RdsHostPool -TenantName $TenantName -Name $HostPoolName -ErrorAction SilentlyContinue
+                               
+                                if ($HPName) {
+                                
+                                if ($HPName.UseReverseConnect -eq $False) {
+                
+                                                Set-RdsHostPool -TenantName $TenantName -Name $HostPoolName -UseReverseConnect $true
+                                            }
+
+                                }
+                                
+                                $SessionHostName = (Get-WmiObject win32_computersystem).DNSHostName + "." + (Get-WmiObject win32_computersystem).Domain
+                                
+                                $Registered = Export-RdsRegistrationInfo -TenantName $TenantName -HostPoolName $HostPoolName
+                                $reglog = $registered | Out-String
+                                Write-Log -Message "Exported Rds RegisterationInfo into variable 'Registered': $reglog"
+                                
+                                          
+                                            $systemdate = (GET-DATE)
+                                            $Tokenexpiredate = $Registered.ExpirationUtc
+                                            $difference = $Tokenexpiredate - $systemdate
+                                            write-log -Message "Calculating date and time whether expired or not? with system date and time"
+                                            if ($difference -lt 0 -or $Registered -eq 'null') {
+                                                write-log -Message "Registerationinfo was expired, now again creating new registeration info with hours $Hours"
+                                                $Registered = New-RdsRegistrationInfo -TenantName $TenantName -HostPoolName $HostPoolName -ExpirationHours $Hours
+                                            }
+                                            else {
+
+                                                $reglogexpired = $Tokenexpiredate | Out-String -Stream
+                                                Write-Log -Message "Registerationinfo is not expired, expired in $reglogexpired"
+                                            }
+
+                                            $DAgentInstall = .\DeployAgent.ps1 -ComputerName $SessionHostName -AgentBootServiceInstaller ".\RDAgentBootLoaderInstall\Microsoft.RDInfra.RDAgentBootLoader.Installer-x64.msi" -AgentInstaller ".\RDInfraAgentInstall\Microsoft.RDInfra.RDAgent.Installer-x64.msi" -SxSStackInstaller ".\RDInfraSxSStackInstall\Microsoft.RDInfra.StackSxS.Installer-x64.msi" -AdminCredentials $domaincredentials -TenantName $TenantName -PoolName $HostPoolName -RegistrationToken $Registered.Token -StartAgent $true
+                                            Write-Log -Message "DeployAgent Script was successfully executed and installed RDAgent, sidebyside inside VM for new $HName `
+                                            $DAgentInstall"
+                                            
+                                            $addRdsh = Set-RdsSessionHost -TenantName $TenantName -HostPoolName $HostPoolName -Name $SessionHostName -AllowNewSession $true
+                                            $rdshName = $addRdsh.name | Out-String -Stream
+                                            $poolName = $addRdsh.hostpoolname | Out-String -Stream
+                                            Write-Log -Message "Successfully added $rdshName VM to $poolName"
+                                }
                                 }
