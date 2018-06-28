@@ -80,4 +80,4 @@ Invoke-Command -ComputerName localhost -Credential $localcred -ScriptBlock{
 param($AadTenantId,$Username,$Password,$ResourceGroupName)
 cd "C:\PSModules"
 .\RemoveRG.ps1 -AadTenantId $AadTenantId -Username $Username -Password $Password -ResourceGroupName $ResourceGroupName
-} -ArgumentList($AadTenantId,$Username,$Password,$ResourceGroupName)
+} -ArgumentList($AadTenantId,$Username,$Password,$ResourceGroupName) -AsJob
