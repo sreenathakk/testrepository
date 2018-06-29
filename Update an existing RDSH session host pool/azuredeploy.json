@@ -152,6 +152,8 @@
         "_artifactsLocation": "https://raw.githubusercontent.com/Azure/RDS-Templates/master/rdmi-peopletech/Update%20an%20existing%20RDSH%20session%20host%20pool/",
         "fileURI": "[concat(variables('_artifactsLocation'),'/Scripts/DeployAgent.zip')]"
     },
+    
+
     "resources": [
         {
             "type": "Microsoft.Network/networkInterfaces",
@@ -301,7 +303,7 @@
             "location": "[resourceGroup().location]",
             "copy": {
                 "name": "rdsh-vm-loop",
-                "count": "[sub(parameters('rdshNumberOfInstances'),1)]"
+                "count": "[if(equals(parameters('rdshNumberOfInstances'),1),1,sub(parameters('rdshNumberOfInstances'),1))]"
             },
             "tags": {
                 "displayName": "script"

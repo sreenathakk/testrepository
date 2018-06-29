@@ -77,7 +77,7 @@ try {
 
     #Creating a folder inside rdsh vm for extracting deployagent zip file
     New-Item -Path "C:\DeployAgent" -ItemType directory -Force -ErrorAction SilentlyContinue
-    Write-Log -Message "Created a new folder which is 'DeployAgent' inside VM"
+    Write-Log -Message "Created a new folder 'DeployAgent' inside VM"
     Expand-Archive "C:\DeployAgent.zip" -DestinationPath "C:\DeployAgent" -ErrorAction SilentlyContinue
     Write-Log -Message "Extracted the 'Deployagent.zip' file into 'C:\Deployagent' folder inside VM"
     Set-Location "C:\DeployAgent"
@@ -86,7 +86,7 @@ try {
         #Importing RDMI PowerShell module
     
         Import-Module .\PowershellModules\Microsoft.RDInfra.RDPowershell.dll
-        Write-Log -Message "Imported RDMI PowerShell modules successfully"
+        
         $Securepass = ConvertTo-SecureString -String $DelegateAdminpassword -AsPlainText -Force
         $Credentials = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($DelegateAdminUsername, $Securepass)
         $DAdminSecurepass = ConvertTo-SecureString -String $DomainAdminPassword -AsPlainText -Force
@@ -101,6 +101,7 @@ try {
         $obj = $authentication | Out-String
     
         if ($authentication) {
+            Write-Log -Message "Imported RDMI PowerShell modules successfully"
             Write-Log -Message "RDMI Authentication successfully Done. Result: `
        $obj"  
         }
@@ -111,11 +112,11 @@ try {
         }
     
         $HPName = Get-RdsHostPool -TenantName $TenantName -Name $HostPoolName -ErrorAction SilentlyContinue
-        Write-Log -Message "Checking Hostpool is existing or not inside the Tenant"
+        Write-Log -Message "Checking Hostpool exists inside the Tenant"
 
         if ($HPName) {
         $HPName = Get-RdsHostPool -TenantName $TenantName -Name $HostPoolName -ErrorAction SilentlyContinue
-            Write-log -Message "Hostpool is existed inside tenant: $TenantName"
+            Write-log -Message "Hostpool exists inside tenant: $TenantName"
 
             Write-Log -Message "Checking Hostpool UseResversconnect is true or false"
             # Cheking UseReverseConnect is true or false
@@ -133,31 +134,30 @@ try {
             $systemdate = (GET-DATE)
             $Tokenexpiredate = $Registered.ExpirationUtc
             $difference = $Tokenexpiredate - $systemdate
-            write-log -Message "Calculating date and time whether expired or not? with system date and time"
+            write-log -Message "Calculating date and time expiration with system date and time"
             if ($difference -lt 0 -or $Registered -eq 'null') {
-                write-log -Message "Registerationinfo was expired, now again creating new registeration info with hours $Hours"
+                write-log -Message "Registerationinfo expired, creating new registeration info with hours $Hours"
                 $Registered = New-RdsRegistrationInfo -TenantName $TenantName -HostPoolName $HostPoolName -ExpirationHours $Hours
             }
             else {
                 $reglogexpired = $Tokenexpiredate | Out-String -Stream
-                Write-Log -Message "Registerationinfo is not expired, expired in $reglogexpired"
+                Write-Log -Message "Registerationinfo not expired and expiring on $reglogexpired"
             }
             #Executing DeployAgent psl file in rdsh vm and add to hostpool
             $DAgentInstall = .\DeployAgent.ps1 -ComputerName $SessionHostName -AgentBootServiceInstaller ".\RDAgentBootLoaderInstall\Microsoft.RDInfra.RDAgentBootLoader.Installer-x64.msi" -AgentInstaller ".\RDInfraAgentInstall\Microsoft.RDInfra.RDAgent.Installer-x64.msi" -SxSStackInstaller ".\RDInfraSxSStackInstall\Microsoft.RDInfra.StackSxS.Installer-x64.msi" -AdminCredentials $domaincredentials -TenantName $TenantName -PoolName $HostPoolName -RegistrationToken $Registered.Token -StartAgent $true
-            Write-Log -Message "DeployAgent Script was successfully executed and installed RDAgent, sidebyside inside VM for existing hostpool: $HostPoolName `
+            Write-Log -Message "DeployAgent Script was successfully executed and RDAgentBootLoader,RDAgent,StackSxS installed inside VM for existing hostpool: $HostPoolName `
         $DAgentInstall"
-        } 
-        else{
         
-        Write-Log -Message "$HostPoolName doesn't exist inside Tenant: $TenantName"
-        }
-
         #add rdsh vm to hostpool
         $addRdsh = Set-RdsSessionHost -TenantName $TenantName -HostPoolName $HostPoolName -Name $SessionHostName -AllowNewSession $true
         $rdshName = $addRdsh.name | Out-String -Stream
         $poolName = $addRdsh.hostpoolname | Out-String -Stream
         Write-Log -Message "Successfully added $rdshName VM to $poolName"
- 
+        }
+        else{
+        
+        Write-Log -Message "$HostPoolName doesn't exist inside Tenant: $TenantName"
+        }
 
 }
 catch {
