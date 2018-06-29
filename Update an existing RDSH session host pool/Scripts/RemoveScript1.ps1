@@ -282,7 +282,10 @@
                 Write-Log -Message "successfully removed dns record of $VMName"
                 
                 }
-                else{
+
+                else
+                {                
+                #removing custom script extension
                 $vminfo=Get-AzureRmVM | Where-Object {$_.Name -eq $VMName}
                 $vmextensionIds=$vminfo.Extensions
                 foreach($vmextensionid in $vmextensionIds){

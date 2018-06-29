@@ -83,22 +83,6 @@ try {
     Set-Location "C:\DeployAgent"
     Write-Log -Message "Setting up the location of Deployagent folder"
 
-    #Checking if RDInfragent is registered or not in rdsh vm
-    $CheckRegistery = Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\RDInfraAgent" -ErrorAction SilentlyContinue
-
-    Write-Log -Message "Checking whether VM was Registered with RDInfraAgent or not"
-
-    if ($CheckRegistery) {
-        Write-Log -Message "VM was already registered with RDInfraAgent, script execution was stopped"
-
-    }
-    else {
-
-        Write-Log -Message "VM was not registered with RDInfraAgent, script is executing"
-    }
-
-
-    if (!$CheckRegistery) {
         #Importing RDMI PowerShell module
     
         Import-Module .\PowershellModules\Microsoft.RDInfra.RDPowershell.dll
@@ -173,7 +157,7 @@ try {
         $rdshName = $addRdsh.name | Out-String -Stream
         $poolName = $addRdsh.hostpoolname | Out-String -Stream
         Write-Log -Message "Successfully added $rdshName VM to $poolName"
-    }
+ 
 
 }
 catch {
