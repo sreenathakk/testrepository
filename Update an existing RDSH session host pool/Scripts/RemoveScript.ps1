@@ -184,6 +184,8 @@
                  Write-Log -Error "Subscription Id $SubscriptionId not in context"
             }
             
+            $convertSeconds=$userLogoffTimeoutInMinutes * 60
+            Start-Sleep -Seconds $convertSeconds
             
             
             foreach($sh in $allShsNames){
@@ -194,9 +196,6 @@
                 Write-Log -Message "Sesssion host server keep in drain mode : `
                 $shsDrainlog"
                 
-                $convertSeconds=$userLogoffTimeoutInMinutes * 60
-                Start-Sleep -Seconds $convertSeconds
-
                 Remove-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName -Name $sh -Force $true
                 Write-Log -Message "Successfully $sh removed from hostpool"
                 
@@ -297,14 +296,14 @@
                 
                 $allHosts=Get-RdsSessionHost -TenantName $tenantname -HostPoolName $HostPoolName
                 
-                if(!$allHosts)
+                if(!$allHosts -or $deallocateVMs -eq "DeallocateVMs")
                 {
                     
                     $CheckRegistery = Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\RDInfraAgent" -ErrorAction SilentlyContinue
                 
                 if (!$CheckRegistery) {
                 
-                $HPName = Get-RdsHostPool -TenantName $TenantName -Name $HostPoolName -ErrorAction SilentlyContinue
+                                $HPName = Get-RdsHostPool -TenantName $TenantName -Name $HostPoolName -ErrorAction SilentlyContinue
                                
                                 if ($HPName) {
                                 
