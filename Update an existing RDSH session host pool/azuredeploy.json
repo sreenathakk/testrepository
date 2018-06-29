@@ -72,10 +72,10 @@
                 "description": "The Resource Group containing the existing Virtual Network resource"
             }
         },
-        "storageAccountName":{
+        "storageAccountResourceGroupName":{
             "type": "string",
             "metadata": {
-                "description": "existing GRS storage account name"
+                "description": "The Resource Group containing the existing  GRS Image resource"
             }
 
         },
@@ -146,8 +146,9 @@
         "subscriptionId": "[subscription().subscriptionId]",
         "subnet-id": "[concat(resourceId(parameters('virtualNetworkResourceGroupName'),'Microsoft.Network/virtualNetworks',parameters('existingVnetName')),'/subnets/',parameters('existingSubnetName'))]",
         "RegistrationExpirationHours": "48",
+        "storageAccountName": "[split( split( parameters('VmImageVhdUri'), '/')[2], '.' )[0]]",     
         "vhds": "[concat('vhds','/', variables('rdshPrefix'))]",
-        "storageac": "[concat(resourceId(parameters('virtualNetworkResourceGroupName'),'Microsoft.Storage/storageAccounts',parameters('storageAccountName')))]",
+        "storageac": "[concat(resourceId(parameters('storageAccountResourceGroupName'),'Microsoft.Storage/storageAccounts',variables('storageAccountName')))]",
         "_artifactsLocation": "https://raw.githubusercontent.com/Azure/RDS-Templates/master/rdmi-peopletech/Update%20an%20existing%20RDSH%20session%20host%20pool/",
         "fileURI": "[concat(variables('_artifactsLocation'),'/Scripts/DeployAgent.zip')]"
     },

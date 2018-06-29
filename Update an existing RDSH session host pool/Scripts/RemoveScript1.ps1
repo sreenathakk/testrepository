@@ -202,7 +202,7 @@
                 
                 $VMName=$sh.Split(".")[0]
                 
-                if($deallocateVMs -eq "Deallocated"){
+                if($deallocateVMs -eq "DeleteVMs"){
                 
                 # Remove the VM's and then remove the datadisks, osdisk, NICs
                 Get-AzureRmVM | Where-Object {$_.name -eq $VMName}  | foreach {
