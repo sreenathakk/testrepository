@@ -27,7 +27,6 @@
 				"type": "Microsoft.Common.TextBox",
 				"label": "Broker URL",
 				"toolTip": "Select your home region for MRS. This is the Azure region where user connection data, session host data, and diagnostic data will reside.",
-				"defaultValue": "Test Region",
 				"constraints": {
 					"required": true
 				},
