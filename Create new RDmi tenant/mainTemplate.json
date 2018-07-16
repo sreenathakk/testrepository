@@ -8,10 +8,10 @@
                 "description": "provide RdbrokerURI"
             }
         },
-        "HosterAdminName": {
+        "hosterAdminUPN": {
             "type": "String",
             "metadata": {
-                "description": "HosterAdminName for the Azure Partner Account."
+                "description": "The UPN that has rights in the RDS HosterAdmin to create the Tenant. For example, “admin1@contoso.com”"
             }
         },
         "HosterAdminPassword": {
@@ -65,6 +65,14 @@
             "metadata": {
                 "description": "Provide Hostpool Description"
             }
+        },
+        "baseUrl": {
+            "type": "string",
+            "metadata": {
+              "description": "The base URL for RDmi info",
+              "artifactsBaseUrl": ""
+            },
+            "defaultValue": "https://raw.githubusercontent.com/Azure/RDS-Templates/master/rdmi-peopletech/Create%20new%20RDmi%20tenant/"
         }
     },
     "variables": {
@@ -75,18 +83,18 @@
         "subnetPrefix": "10.0.0.0/24",
         "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
         "vmName": "MyVM",
-        "TFriendlyName":"[if(equals(parameters('TenantFriendlyName'),'empty'), json('null'), parameters('TenantFriendlyName'))]",
-        "TDescription":"[if(equals(parameters('TenantDescription'),'empty'), json('null'), parameters('TenantDescription'))]",
-        "HFriendlyName":"[if(equals(parameters('HostpoolFriendlyName'),'empty'), json('null'), parameters('HostpoolFriendlyName'))]",
-        "HDescription":"[if(equals(parameters('HostpoolDescription'),'empty'), json('null'), parameters('HostpoolDescription'))]",
+        "tenantFriendlyName":"[if(equals(parameters('TenantFriendlyName'),'empty'), json('null'), parameters('TenantFriendlyName'))]",
+        "tenantDescription":"[if(equals(parameters('TenantDescription'),'empty'), json('null'), parameters('TenantDescription'))]",
+        "hostPoolFriendlyName":"[if(equals(parameters('HostpoolFriendlyName'),'empty'), json('null'), parameters('HostpoolFriendlyName'))]",
+        "hostPoolDescription":"[if(equals(parameters('HostpoolDescription'),'empty'), json('null'), parameters('HostpoolDescription'))]",
         "virtualNetworkName": "MyVNET",
         "publicIPAddressName": "myPublicIP",
         "dnsNameForPublicIP": "[uniqueString(resourceGroup().name)]",
-        "_artifactsLocation": "https://raw.githubusercontent.com/sreenathakk/testrepository/master/Tenantcreation/Scripts/",
         "adminUsername": "vmadmin",
         "adminPassword": "Welcome@12345",
         "resourcegroupname": "[resourceGroup().name]",
-        "FileURI": "[concat(variables('_artifactsLocation'),'/PSModules.zip')]"
+        "scriptURI": "[concat(parameters('baseUrl'),'/Scripts/Script.ps1')]",
+        "psModuleURI": "[concat(parameters('baseUrl'),'/Scripts/PSModules.zip')]"
     },
     "resources": [
         {
@@ -194,9 +202,9 @@
                         "autoUpgradeMinorVersion": true,
                         "settings": {
                             "fileUris": [
-                                "https://raw.githubusercontent.com/sreenathakk/testrepository/master/Tenantcreation/Scripts/Script.ps1"
+                                "[variables('scriptURI')]"
                             ],
-                            "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File Script.ps1', ' -RDBrokerURI \"', parameters('RDBrokerURL'), '\"',' ',  ' -SubscriptionId \"', variables('vmsubscriptionId'), '\"',' ', ' -AadTenantId \"', parameters('AadTenantId'), '\"',' ', ' -TenantName \"', parameters('TenantName'), '\"',' ', ' -FriendlyName \"', variables('TFriendlyName'), '\"',' ', ' -Description \"', variables('TDescription'), '\"',' ',' -HostPoolName \"', parameters('HostPoolName'), '\"',' ', ' -HostPoolFriendlyName \"', variables('HFriendlyName'), '\"',' ', ' -HostPoolDescription \"', variables('HDescription'), '\"',' ', ' -Username \"', parameters('HosterAdminName'), '\"',' ', ' -password \"', parameters('HosterAdminPassword'), '\"',' ',' -vmUserName \"', variables('adminUsername'), '\"',' ', ' -vmPassword \"', variables('adminPassword'), '\"',' ', '-ResourceGroupName \"', variables('resourcegroupname'), '\"',' ', ' -fileURI \"', variables('FileUri'), '\"')]"
+                            "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File Script.ps1', ' -RDBrokerURI \"', parameters('RDBrokerURL'), '\"',' ',  ' -SubscriptionId \"', variables('vmsubscriptionId'), '\"',' ', ' -AadTenantId \"', parameters('AadTenantId'), '\"',' ', ' -TenantName \"', parameters('TenantName'), '\"',' ', ' -FriendlyName \"', variables('tenantFriendlyName'), '\"',' ', ' -Description \"', variables('tenantDescription'), '\"',' ',' -HostPoolName \"', parameters('HostPoolName'), '\"',' ', ' -HostPoolFriendlyName \"', variables('hostPoolFriendlyName'), '\"',' ', ' -HostPoolDescription \"', variables('hostPoolDescription'), '\"',' ', ' -Username \"', parameters('hosterAdminUPN'), '\"',' ', ' -password \"', parameters('HosterAdminPassword'), '\"',' ',' -vmUserName \"', variables('adminUsername'), '\"',' ', ' -vmPassword \"', variables('adminPassword'), '\"',' ', '-ResourceGroupName \"', variables('resourcegroupname'), '\"',' ', ' -fileURI \"', variables('psModuleURI'), '\"')]"
                         }
                     },
                     "dependsOn": [

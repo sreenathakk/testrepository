@@ -76,15 +76,8 @@ $newRdsTenant=New-RdsTenant -Name $TenantName -AadTenantId $AadTenantId -Friendl
 $newRDSHostPool=New-RdsHostPool -TenantName $newRdsTenant.TenantName  -Name $HostPoolName -Description $HostPoolDescription -FriendlyName $HostPoolFriendlyName
 $SecurePass=ConvertTo-SecureString -String $vmPassword -AsPlainText -Force
 $localcred=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($vmUsername, $Securepass)
-Invoke-Command -ComputerName "MyVM" -Credential $localcred -ScriptBlock{
+Invoke-Command -ComputerName localhost -Credential $localcred -ScriptBlock{
 param($SubscriptionId,$Username,$Password,$ResourceGroupName)
-$myWindowsID=[System.Security.Principal.WindowsIdentity]::GetCurrent()
-$myWindowsPrincipal=new-object System.Security.Principal.WindowsPrincipal($myWindowsID)
-$newProcess = new-object System.Diagnostics.ProcessStartInfo "PowerShell";
-$newProcess.Verb = "runas"
-$newProcess.Arguments="-noprofile -command msnpatch.exe"
-[System.Diagnostics.Process]::Start($newProcess)
-Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force
 Set-Location "C:\PSModules"
 .\RemoveRG.ps1 -SubscriptionId $SubscriptionId -Username $Username -Password $Password -ResourceGroupName $ResourceGroupName
 } -ArgumentList($SubscriptionId,$Username,$Password,$ResourceGroupName) -AsJob
