@@ -72,7 +72,7 @@
               "description": "The base URL for RDmi info",
               "artifactsBaseUrl": ""
             },
-            "defaultValue": "https://raw.githubusercontent.com/Azure/RDS-Templates/master/rdmi-peopletech/Create%20new%20RDmi%20tenant/"
+            "defaultValue": "https://raw.githubusercontent.com/sreenathakk/testrepository/master/Create%20new%20RDmi%20tenant/"
         }
     },
     "variables": {
