@@ -48,7 +48,13 @@
     [string] $vmPassword,
 
     [Parameter(Mandatory=$True)]
-    [string] $ResourceGroupName
+    [string] $VMName,
+
+    [Parameter(Mandatory=$True)]
+    [string] $publicIP,
+
+    [Parameter(Mandatory=$True)]
+    [string] $vNetName
  
 )
 
@@ -77,7 +83,7 @@ $newRDSHostPool=New-RdsHostPool -TenantName $newRdsTenant.TenantName  -Name $Hos
 $SecurePass=ConvertTo-SecureString -String $vmPassword -AsPlainText -Force
 $localcred=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($vmUsername, $Securepass)
 Invoke-Command -ComputerName localhost -Credential $localcred -ScriptBlock{
-param($SubscriptionId,$Username,$Password,$ResourceGroupName)
+param($SubscriptionId,$Username,$Password,$VMName,$publicIP,$vNetName)
 Set-Location "C:\PSModules"
-.\RemoveRG.ps1 -SubscriptionId $SubscriptionId -Username $Username -Password $Password -ResourceGroupName $ResourceGroupName
-} -ArgumentList($SubscriptionId,$Username,$Password,$ResourceGroupName) -AsJob
+.\RemoveRG.ps1 -SubscriptionId $SubscriptionId -Username $Username -Password $Password -VMName $VMName -publicIp $publicIp -vNetName $vNetName
+} -ArgumentList($SubscriptionId,$Username,$Password,$VMName,$publicIP,$vNetName) -AsJob
