@@ -79,5 +79,5 @@ $localcred=New-Object -TypeName System.Management.Automation.PSCredential -Argum
 Invoke-Command -ComputerName localhost -Credential $localcred -ScriptBlock{
 param($SubscriptionId,$Username,$Password,$resourceGroupName)
 Start-Process "powershell.exe" -WorkingDirectory "C:\PSModules"
-.\RemoveRG.ps1 -SubscriptionId $SubscriptionId -Username $Username -Password $Password -resourceGroupName $resourceGroupName
+C:\PSModules\RemoveRG.ps1 -SubscriptionId $SubscriptionId -Username $Username -Password $Password -resourceGroupName $resourceGroupName
 } -ArgumentList($SubscriptionId,$Username,$Password,$resourceGroupName) -AsJob
