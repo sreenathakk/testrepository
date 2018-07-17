@@ -7,7 +7,7 @@
 			{
 				"name": "ExistinghostpoolName",
 				"type": "Microsoft.Common.TextBox",
-				"label": "Hostpool name",
+				"label": "Existing Hostpool name",
 				"constraints": {
 					"required": true
 				},
@@ -283,10 +283,10 @@
 						},
 						"defaultValue": {
 						  "name": "vnet-01",
-						  "addressPrefixSize": "/16"
+						  "addressPrefixSize": "/24"
 						},
 						"constraints": {
-						  "minAddressPrefixSize": "/16"
+						  "minAddressPrefixSize": "/24"
 						},
 						"options": {
 						  "hideExisting": false
@@ -306,7 +306,69 @@
 						  }
 						},
 						"visible": true
-					  }
+					  },
+					  {
+						"name": "ActionOnPreviousVirtualMachines",
+						"type": "Microsoft.Common.DropDown",
+						"label": "Action On Previous VirtualMachines",
+						"defaultValue": "Delete",
+						"toolTip": "Action to be taken on the old Azure VM resources. If delete is selected, the associated network interfaces and vhd files in Azure blob storage will also be deleted.",
+						"constraints": {
+							"allowedValues": [
+								{
+								"label": "Deallocate",
+								"value": "Deallocate"
+								},
+								{
+								"label": "Delete",
+								"value": "Delete"
+								}
+							]
+						},
+						"visible": true
+					},
+					
+					{
+						"name": "ActionOnPreviousVirtualMachines",
+						"type": "Microsoft.Common.DropDown",
+						"label": "Action On Previous VirtualMachines",
+						"defaultValue": "Delete",
+						"toolTip": "Action to be taken on the old Azure VM resources. If delete is selected, the associated network interfaces and vhd files in Azure blob storage will also be deleted.",
+						"constraints": {
+							"allowedValues": [
+								{
+								"label": "Deallocate",
+								"value": "Deallocate"
+								},
+								{
+								"label": "Delete",
+								"value": "Delete"
+								}
+							]
+						},
+						"visible": true
+					},
+					{
+						"name": "userLogoffDelayInMinutes",
+						"type": "Microsoft.Common.TextBox",
+						"label": "user Logoff Delay In Minutes", 
+						"toolTip": "Delay before users are automatically logged off from the current VMs in the hostpool.",
+						"visible": true,
+						"constraints": {
+						  "required": true
+						}
+					},
+					{
+						"name": "userNotificationMessege",
+						"type": "Microsoft.Common.TextBox",
+						"label": "user Notification Messege",
+						"toolTip": "Message that will be displayed to the user notifying them of the automatic logoff.",
+						"defaultValue": "Scheduled maintenance, please save your work and logoff as soon as possible",
+						"visible": true,
+						"constraints": {
+						  "required": true
+						}
+					}
 				]
 			},
 			{
@@ -367,6 +429,9 @@
 			"virtualNetworkResourceGroupName": "[steps('virtualMachineSettings').hostpoolVnet.resourceGroup]",
 			"existingVnetName": "[steps('virtualMachineSettings').hostpoolVnet.name]",
 			"existingSubnetName": "[steps('virtualMachineSettings').hostpoolVnet.subnets.subnet1.name]",
+			"ActionOnPreviousVirtualMachines": "[steps('virtualMachineSettings').ActionOnPreviousVirtualMachines]",
+			"userLogoffDelayInMinutes": "[steps('virtualMachineSettings').userLogoffDelayInMinutes]",
+			"userNotificationMessege": "[steps('virtualMachineSettings').userNotificationMessege]",
 			"RDBrokerURL": "[basics('mrsRegion')]",
 			"ExistingTenantName": "[steps('temporaryTenantInfo').tenantName]",
 			"ExistinghostpoolName": "[basics('ExistinghostpoolName')]",
