@@ -78,6 +78,6 @@ $SecurePass=ConvertTo-SecureString -String $vmPassword -AsPlainText -Force
 $localcred=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($vmUsername, $Securepass)
 Invoke-Command -ComputerName localhost -Credential $localcred -ScriptBlock{
 param($SubscriptionId,$Username,$Password,$resourceGroupName)
-Set-Location "C:\PSModules"
+Start-Process "powershell.exe" -WorkingDirectory "C:\PSModules"
 .\RemoveRG.ps1 -SubscriptionId $SubscriptionId -Username $Username -Password $Password -resourceGroupName $resourceGroupName
 } -ArgumentList($SubscriptionId,$Username,$Password,$resourceGroupName) -AsJob

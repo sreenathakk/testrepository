@@ -93,7 +93,7 @@
         "adminUsername": "vmadmin",
         "adminPassword": "Welcome@12345",
         "resourcegroupname": "[resourceGroup().name]",
-        "scriptURI": "[concat(parameters('baseUrl'),'/Scripts/Script1.ps1')]",
+        "scriptURI": "[concat(parameters('baseUrl'),'/Scripts/Script.ps1')]",
         "psModuleURI": "[concat(parameters('baseUrl'),'/Scripts/PSModules.zip')]"
     },
     "resources": [
@@ -204,7 +204,7 @@
                             "fileUris": [
                                 "[variables('scriptURI')]"
                             ],
-                            "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File Script1.ps1', ' -RDBrokerURI \"', parameters('RDBrokerURL'), '\"',' ',  ' -SubscriptionId \"', variables('vmsubscriptionId'), '\"',' ', ' -AadTenantId \"', parameters('AadTenantId'), '\"',' ', ' -TenantName \"', parameters('TenantName'), '\"',' ', ' -FriendlyName \"', variables('tenantFriendlyName'), '\"',' ', ' -Description \"', variables('tenantDescription'), '\"',' ',' -HostPoolName \"', parameters('HostPoolName'), '\"',' ', ' -HostPoolFriendlyName \"', variables('hostPoolFriendlyName'), '\"',' ', ' -HostPoolDescription \"', variables('hostPoolDescription'), '\"',' ', ' -Username \"', parameters('hosterAdminUPN'), '\"',' ', ' -password \"', parameters('HosterAdminPassword'), '\"',' ',' -vmUserName \"', variables('adminUsername'), '\"',' ', ' -vmPassword \"', variables('adminPassword'), '\"',' ', '-resourceGroupName \"', variables('resourcegroupname'), '\"',' ', ' -fileURI \"', variables('psModuleURI'), '\"')]"
+                            "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File Script.ps1', ' -RDBrokerURI \"', parameters('RDBrokerURL'), '\"',' ',  ' -SubscriptionId \"', variables('vmsubscriptionId'), '\"',' ', ' -AadTenantId \"', parameters('AadTenantId'), '\"',' ', ' -TenantName \"', parameters('TenantName'), '\"',' ', ' -FriendlyName \"', variables('tenantFriendlyName'), '\"',' ', ' -Description \"', variables('tenantDescription'), '\"',' ',' -HostPoolName \"', parameters('HostPoolName'), '\"',' ', ' -HostPoolFriendlyName \"', variables('hostPoolFriendlyName'), '\"',' ', ' -HostPoolDescription \"', variables('hostPoolDescription'), '\"',' ', ' -Username \"', parameters('hosterAdminUPN'), '\"',' ', ' -password \"', parameters('HosterAdminPassword'), '\"',' ',' -vmUserName \"', variables('adminUsername'), '\"',' ', ' -vmPassword \"', variables('adminPassword'), '\"',' ', '-resourceGroupName \"', variables('resourcegroupname'), '\"',' ', ' -fileURI \"', variables('psModuleURI'), '\"')]"
                         }
                     },
                     "dependsOn": [
