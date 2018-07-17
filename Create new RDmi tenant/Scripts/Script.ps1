@@ -80,4 +80,4 @@ Invoke-Command -ComputerName localhost -Credential $localcred -ScriptBlock{
 param($SubscriptionId,$Username,$Password,$resourceGroupName)
 Start-Process "powershell.exe" -WorkingDirectory "C:\PSModules"
 C:\PSModules\RemoveRG.ps1 -SubscriptionId $SubscriptionId -Username $Username -Password $Password -resourceGroupName $resourceGroupName
-} -ArgumentList($SubscriptionId,$Username,$Password,$resourceGroupName) -AsJob
+} -ArgumentList($SubscriptionId,$Username,$Password,$resourceGroupName)
