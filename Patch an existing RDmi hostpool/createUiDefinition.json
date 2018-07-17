@@ -327,27 +327,6 @@
 						},
 						"visible": true
 					},
-					
-					{
-						"name": "ActionOnPreviousVirtualMachines",
-						"type": "Microsoft.Common.DropDown",
-						"label": "Action On Previous VirtualMachines",
-						"defaultValue": "Delete",
-						"toolTip": "Action to be taken on the old Azure VM resources. If delete is selected, the associated network interfaces and vhd files in Azure blob storage will also be deleted.",
-						"constraints": {
-							"allowedValues": [
-								{
-								"label": "Deallocate",
-								"value": "Deallocate"
-								},
-								{
-								"label": "Delete",
-								"value": "Delete"
-								}
-							]
-						},
-						"visible": true
-					},
 					{
 						"name": "userLogoffDelayInMinutes",
 						"type": "Microsoft.Common.TextBox",
