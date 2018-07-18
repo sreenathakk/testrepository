@@ -8,7 +8,7 @@
 				"name": "hosterAdminUPN",
 				"type": "Microsoft.Common.TextBox",
 				"label": "Hoster Admin UPN",
-				"toolTip": "Enter the UPN (admin1@contoso.com) of an admin who will manage the Hoster environment.",
+				"toolTip": "Enter the UPN (admin1@contoso.com) of an hostteradmin who will manage the Hoster environment.",
 				"constraints": {
 					"required": true
 				}
