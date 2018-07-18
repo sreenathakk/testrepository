@@ -78,6 +78,12 @@ $SecurePass=ConvertTo-SecureString -String $vmPassword -AsPlainText -Force
 $localcred=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($vmUsername, $Securepass)
 Invoke-Command -ComputerName localhost -Credential $localcred -ScriptBlock{
 param($SubscriptionId,$Username,$Password,$resourceGroupName)
-Start-Process "powershell.exe" -WorkingDirectory "C:\PSModules"
+        $Processes = get-wmiobject win32_process|Where{![string]::IsNullOrEmpty($_.commandline)}|Select *,@{l='Owner';e={$_.getowner().user}}
+        #Filter out System and service processes
+        $Processes = $Processes | Where { !($_.Owner -match "(?:SYSTEM|(?:LOCAL|NETWORK) SERVICE)") }
+        #Get processes and filter on the Process ID and name = explorer, then pipe to stop-process
+        Get-Process | Where { $Processes.ProcessID -contains $_.id -and $_.name -ne "explorer" } | Stop-Process -WhatIf
+#Get-Process -IncludeUserName | Where{!($_.UserName -match "NT AUTHORITY\\(?:SYSTEM|(?:LOCAL|NETWORK) SERVICE)") -and !($_.ProcessName -eq "explorer")}|Stop-Process -WhatIf
+Set-Location "C:\PSModules"
 C:\PSModules\RemoveRG.ps1 -SubscriptionId $SubscriptionId -Username $Username -Password $Password -resourceGroupName $resourceGroupName
 } -ArgumentList($SubscriptionId,$Username,$Password,$resourceGroupName)
