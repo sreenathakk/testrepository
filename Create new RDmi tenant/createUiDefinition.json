@@ -100,12 +100,12 @@
 					"postValidation": "Done"
 				},
 				"bladeTitle": "Enter this info for now",
-				"bladeSubtitle": "Tenant",
+				"bladeSubtitle": "Hostpool",
 				"elements": [
 					{
 						"name": "hostpoolName",
 						"type": "Microsoft.Common.TextBox",
-						"label": "Tenant Name",
+						"label": "Hostpool Name",
 						"toolTip": "Enter the name of the hostpool.",
 						"constraints": {
 							"required": true
