@@ -70,6 +70,8 @@ $newRdsTenant=New-RdsTenant -Name $TenantName -AadTenantId $AadTenantId -Friendl
 $newRDSHostPool=New-RdsHostPool -TenantName $newRdsTenant.TenantName  -Name $HostPoolName -Description $HostPoolDescription -FriendlyName $HostPoolFriendlyName
 #$SecurePass=ConvertTo-SecureString -String $vmPassword -AsPlainText -Force
 #$localcred=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($vmUsername, $Securepass)
+
+
 Invoke-Command -ComputerName localhost -ScriptBlock{
 param($SubscriptionId,$Username,$Password,$resourceGroupName)
 #Get-Process -IncludeUserName | Where{!($_.UserName -match "NT AUTHORITY\\(?:SYSTEM|(?:LOCAL|NETWORK) SERVICE)") -and !($_.ProcessName -eq "explorer")}|Stop-Process -WhatIf
