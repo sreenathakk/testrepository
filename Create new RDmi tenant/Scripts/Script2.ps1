@@ -66,11 +66,17 @@ Import-Module .\PowershellModules\Microsoft.RDInfra.RDPowershell.dll
 $SecurePass = $Password | ConvertTo-SecureString -asPlainText -Force
 $Credential = New-Object System.Management.Automation.PSCredential($Username,$SecurePass)
 Set-RdsContext -DeploymentUrl $RdbrokerURI -Credential $Credential
-#$newRdsTenant=New-RdsTenant -Name $TenantName -AadTenantId $AadTenantId -FriendlyName $FriendlyName -Description $Description
-#$newRDSHostPool=New-RdsHostPool -TenantName $newRdsTenant.TenantName  -Name $HostPoolName -Description $HostPoolDescription -FriendlyName $HostPoolFriendlyName
+$newRdsTenant=New-RdsTenant -Name $TenantName -AadTenantId $AadTenantId -FriendlyName $FriendlyName -Description $Description
+$newRDSHostPool=New-RdsHostPool -TenantName $newRdsTenant.TenantName  -Name $HostPoolName -Description $HostPoolDescription -FriendlyName $HostPoolFriendlyName
+
+PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& 'C:\PSModules\RemoveRG.ps1' -SubscriptionId $SubscriptionId -Username $Username -Password $Password -resourceGroupName $resourceGroupName"
+
+
+<#
 Function fnc{
 param([string]$SubscriptionId,[string]$Username,[string]$Password,[string]$resourceGroupName)
 Set-Location "C:\PSModules"
 .\RemoveRG.ps1 -SubscriptionId $SubscriptionId -Username $Username -Password $Password -resourceGroupName $resourceGroupName
-} 
+}
 fnc -SubscriptionId $SubscriptionId -Username $Username -Password $Password -resourceGroupName $resourceGroupName
+#>
