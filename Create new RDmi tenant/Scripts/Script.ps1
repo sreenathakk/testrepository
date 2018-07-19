@@ -42,6 +42,12 @@
     [string] $Password,
 
     [Parameter(Mandatory=$True)]
+    [String] $vmUsername,
+
+    [Parameter(Mandatory=$True)]
+    [string] $vmPassword,
+
+    [Parameter(Mandatory=$True)]
     [string] $resourceGroupName
  
 )
@@ -68,12 +74,18 @@ $Credential = New-Object System.Management.Automation.PSCredential($Username,$Se
 Set-RdsContext -DeploymentUrl $RdbrokerURI -Credential $Credential
 $newRdsTenant=New-RdsTenant -Name $TenantName -AadTenantId $AadTenantId -FriendlyName $FriendlyName -Description $Description
 $newRDSHostPool=New-RdsHostPool -TenantName $newRdsTenant.TenantName  -Name $HostPoolName -Description $HostPoolDescription -FriendlyName $HostPoolFriendlyName
-#$SecurePass=ConvertTo-SecureString -String $vmPassword -AsPlainText -Force
-#$localcred=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($vmUsername, $Securepass)
+$SecurePass=ConvertTo-SecureString -String $vmPassword -AsPlainText -Force
+$localcred=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($vmUsername, $Securepass)
 
 
-Invoke-Command -ComputerName localhost -ScriptBlock{
+Invoke-Command -ComputerName localhost -Credential $localcred -ScriptBlock{
 param($SubscriptionId,$Username,$Password,$resourceGroupName)
+
+winrm quickconfig -q
+winrm set winrm/config/service '@{AllowUnencrypted="true"}'
+winrm set winrm/config/service/auth '@{Basic="true"}'
+Start-Service WinRM set-service WinRM -StartupType Automatic
+Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled false
 
 #PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& 'C:\PSModules\RemoveRG.ps1' -SubscriptionId $SubscriptionId -Username $Username -Password $Password -resourceGroupName $resourceGroupName"
 
