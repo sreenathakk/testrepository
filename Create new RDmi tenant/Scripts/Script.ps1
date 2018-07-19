@@ -42,12 +42,6 @@
     [string] $Password,
 
     [Parameter(Mandatory=$True)]
-    [String] $vmUsername,
-
-    [Parameter(Mandatory=$True)]
-    [string] $vmPassword,
-
-    [Parameter(Mandatory=$True)]
     [string] $resourceGroupName
  
 )
@@ -74,16 +68,10 @@ $Credential = New-Object System.Management.Automation.PSCredential($Username,$Se
 Set-RdsContext -DeploymentUrl $RdbrokerURI -Credential $Credential
 $newRdsTenant=New-RdsTenant -Name $TenantName -AadTenantId $AadTenantId -FriendlyName $FriendlyName -Description $Description
 $newRDSHostPool=New-RdsHostPool -TenantName $newRdsTenant.TenantName  -Name $HostPoolName -Description $HostPoolDescription -FriendlyName $HostPoolFriendlyName
-$SecurePass=ConvertTo-SecureString -String $vmPassword -AsPlainText -Force
-$localcred=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($vmUsername, $Securepass)
-Invoke-Command -ComputerName localhost -Credential $localcred -ScriptBlock{
+#$SecurePass=ConvertTo-SecureString -String $vmPassword -AsPlainText -Force
+#$localcred=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($vmUsername, $Securepass)
+Invoke-Command -ComputerName localhost -ScriptBlock{
 param($SubscriptionId,$Username,$Password,$resourceGroupName)
-        $Processes = get-wmiobject win32_process|Where{![string]::IsNullOrEmpty($_.commandline)}|Select *,@{l='Owner';e={$_.getowner().user}}
-        #Filter out System and service processes
-        $Processes = $Processes | Where { !($_.Owner -match "(?:SYSTEM|(?:LOCAL|NETWORK) SERVICE)") }
-        #Get processes and filter on the Process ID and name = explorer, then pipe to stop-process
-        Get-Process | Where { $Processes.ProcessID -contains $_.id -and $_.name -ne "explorer" } | Stop-Process -WhatIf
 #Get-Process -IncludeUserName | Where{!($_.UserName -match "NT AUTHORITY\\(?:SYSTEM|(?:LOCAL|NETWORK) SERVICE)") -and !($_.ProcessName -eq "explorer")}|Stop-Process -WhatIf
-Set-Location "C:\PSModules"
-C:\PSModules\RemoveRG.ps1 -SubscriptionId $SubscriptionId -Username $Username -Password $Password -resourceGroupName $resourceGroupName
-} -ArgumentList($SubscriptionId,$Username,$Password,$resourceGroupName)
+PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& 'C:\PSModules\RemoveRG.ps1' -SubscriptionId $SubscriptionId -Username $Username -Password $Password -resourceGroupName $resourceGroupName"
+} -ArgumentList($SubscriptionId,$Username,$Password,$resourceGroupName) -AsJob
