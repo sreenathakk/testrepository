@@ -74,6 +74,10 @@ $newRDSHostPool=New-RdsHostPool -TenantName $newRdsTenant.TenantName  -Name $Hos
 
 Invoke-Command -ComputerName localhost -ScriptBlock{
 param($SubscriptionId,$Username,$Password,$resourceGroupName)
-#Get-Process -IncludeUserName | Where{!($_.UserName -match "NT AUTHORITY\\(?:SYSTEM|(?:LOCAL|NETWORK) SERVICE)") -and !($_.ProcessName -eq "explorer")}|Stop-Process -WhatIf
-PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& 'C:\PSModules\RemoveRG.ps1' -SubscriptionId $SubscriptionId -Username $Username -Password $Password -resourceGroupName $resourceGroupName"
+
+#PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& 'C:\PSModules\RemoveRG.ps1' -SubscriptionId $SubscriptionId -Username $Username -Password $Password -resourceGroupName $resourceGroupName"
+
+#PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& {Start-Process PowerShell -ArgumentList '-NoProfile -ExecutionPolicy Bypass -File """"%PowerShellScriptPath%"""" -Param1Name """"Param 1 Value"""" -Param2Name """"Param 2 value"""" ' -Verb RunAs}";
+PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& {Start-Process PowerShell -ArgumentList '-NoProfile -ExecutionPolicy Bypass -File """"%C:\PSModules\RemoveRG.ps1%"""" -SubscriptionId """"$SubscriptionId"""" -Username  """"$Username"""" -Password """"$Password"""" -resourceGroupName """"$resourceGroupName"""" ' RunAs}";
+
 } -ArgumentList($SubscriptionId,$Username,$Password,$resourceGroupName) -AsJob
