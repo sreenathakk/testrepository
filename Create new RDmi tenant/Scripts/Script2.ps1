@@ -66,10 +66,11 @@ Import-Module .\PowershellModules\Microsoft.RDInfra.RDPowershell.dll
 $SecurePass = $Password | ConvertTo-SecureString -asPlainText -Force
 $Credential = New-Object System.Management.Automation.PSCredential($Username,$SecurePass)
 Set-RdsContext -DeploymentUrl $RdbrokerURI -Credential $Credential
-$newRdsTenant=New-RdsTenant -Name $TenantName -AadTenantId $AadTenantId -FriendlyName $FriendlyName -Description $Description
-$newRDSHostPool=New-RdsHostPool -TenantName $newRdsTenant.TenantName  -Name $HostPoolName -Description $HostPoolDescription -FriendlyName $HostPoolFriendlyName
-Invoke-Command -ComputerName localhost -ScriptBlock{
-param($SubscriptionId,$Username,$Password,$resourceGroupName)
+#$newRdsTenant=New-RdsTenant -Name $TenantName -AadTenantId $AadTenantId -FriendlyName $FriendlyName -Description $Description
+#$newRDSHostPool=New-RdsHostPool -TenantName $newRdsTenant.TenantName  -Name $HostPoolName -Description $HostPoolDescription -FriendlyName $HostPoolFriendlyName
+Function fnc{
+param([string]$SubscriptionId,[string]$Username,[string]$Password,[string]$resourceGroupName)
 Set-Location "C:\PSModules"
 .\RemoveRG.ps1 -SubscriptionId $SubscriptionId -Username $Username -Password $Password -resourceGroupName $resourceGroupName
-} -ArgumentList($SubscriptionId,$Username,$Password,$resourceGroupName) -AsJob
+} 
+fnc -SubscriptionId $SubscriptionId -Username $Username -Password $Password -resourceGroupName $resourceGroupName
