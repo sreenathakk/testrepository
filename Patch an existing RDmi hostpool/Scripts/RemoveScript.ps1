@@ -270,7 +270,15 @@
 
                         }
 
-                        $avSet=Get-AzureRmVM | Where-Object {$_.Name -eq $VMName} | Remove-AzureRmAvailabilitySet -Force
+                        #$avSet=Get-AzureRmVM | Where-Object {$_.Name -eq $VMName} | Remove-AzureRmAvailabilitySet -Force
+                        $avset=Get-AzureRmAvailabilitySet -ResourceGroupName $a.ResourceGroupName
+                        if($avset.VirtualMachinesReferences.id -eq $null){
+                        $removeavset=Get-AzureRmAvailabilitySet -ResourceGroupName $a.ResourceGroupName -ErrorAction SilentlyContinue | Remove-AzureRmAvailabilitySet -Force
+                        }
+                        $checkResources=Get-AzureRmResource -ResourceGroupName $a.ResourceGroupName
+                        if(!$checkResources){
+                        $removeRg=Remove-AzureRmResourceGroup -Name $a.ResourceGroupName -Force
+                        }
                         
                 }
                 

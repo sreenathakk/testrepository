@@ -87,9 +87,6 @@ winrm set winrm/config/service/auth '@{Basic="true"}'
 Start-Service WinRM set-service WinRM -StartupType Automatic
 Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled false
 
-#PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& 'C:\PSModules\RemoveRG.ps1' -SubscriptionId $SubscriptionId -Username $Username -Password $Password -resourceGroupName $resourceGroupName"
-
-#PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& {Start-Process PowerShell -ArgumentList '-NoProfile -ExecutionPolicy Bypass -File """"%PowerShellScriptPath%"""" -Param1Name """"Param 1 Value"""" -Param2Name """"Param 2 value"""" ' -Verb RunAs}";
-PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& {Start-Process PowerShell -ArgumentList '-NoProfile -ExecutionPolicy Bypass -File """"%C:\PSModules\RemoveRG.ps1%"""" -SubscriptionId """"$SubscriptionId"""" -Username  """"$Username"""" -Password """"$Password"""" -resourceGroupName """"$resourceGroupName"""" ' RunAs}";
+PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& 'C:\PSModules\RemoveRG.ps1' -SubscriptionId $SubscriptionId -Username $Username -Password $Password -resourceGroupName $resourceGroupName"
 
 } -ArgumentList($SubscriptionId,$Username,$Password,$resourceGroupName) -AsJob
