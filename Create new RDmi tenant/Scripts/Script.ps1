@@ -71,7 +71,6 @@ $newRDSHostPool = New-RdsHostPool -TenantName $newRdsTenant.TenantName  -Name $H
 
 start-job -ScriptBlock{
 param($SubscriptionId,$Username,$Password,$resourceGroupName)
-
-PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& 'C:\PSModules\RemoveRG.ps1' -SubscriptionId $SubscriptionId -Username $Username -Password $Password -resourceGroupName $resourceGroupName"
-
+$command="& 'C:\PSModules\RemoveRG.ps1' -SubscriptionId $SubscriptionId -Username $Username -Password $Password -resourceGroupName $resourceGroupName"
+Start-Process powershell -ArgumentList "-command & {$command}"
 } -ArgumentList($SubscriptionId,$Username,$Password,$resourceGroupName)
