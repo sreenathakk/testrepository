@@ -200,8 +200,8 @@
 			"AadTenantId": "[basics('AadTenantId')]",
 			"virtualMachineSize": "[steps('virtualMachineSettings').virtualMachineSize]",
 			"galleryImageSelection": "[steps('virtualMachineSettings').galleryImageSelection]",
-			"tenantName": "[steps('temporaryTenantInfo').tenantName]",
-			"hostpoolName": "[steps('temporaryTenantInfo').hostpoolName]"
+			"tenantName": "[steps('tenantInfo').tenantName]",
+			"hostpoolName": "[steps('hostpoolInfo').hostpoolName]"
 		}
 	}
 }
