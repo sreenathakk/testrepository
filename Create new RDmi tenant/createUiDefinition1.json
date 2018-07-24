@@ -80,8 +80,7 @@
 							"Standard_DS1",
 							"Standard_DS1_v2"
 						],
-						"visible": true,
-						"count": "[ div (sub (add( mul(int(replace(substring(steps('configureVirtualMachines').virtualMachineSize,10,2),'s',' ')), steps('configureVirtualMachines').usageProfile), int(steps('configureVirtualMachines').totalUsers)),1),   mul(int(replace(substring(steps('configureVirtualMachines').virtualMachineSize, 10, 2), 's', ' ')), steps('configureVirtualMachines').usageProfile) )]"
+						"visible": true
 					},
 					{
 						"name": "vmImageType",
@@ -199,6 +198,8 @@
 			"hosterAdminPassword": "[basics('hosterAdminPassword')]",
 			"RDBrokerURL": "[basics('brokerURL')]",
 			"AadTenantId": "[basics('AadTenantId')]",
+			"virtualMachineSize": "[steps('virtualMachineSettings').virtualMachineSize]",
+			"galleryImageSelection": "[steps('virtualMachineSettings').galleryImageSelection]",
 			"tenantName": "[steps('temporaryTenantInfo').tenantName]",
 			"hostpoolName": "[steps('temporaryTenantInfo').hostpoolName]"
 		}
