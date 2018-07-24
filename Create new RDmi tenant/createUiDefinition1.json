@@ -52,14 +52,14 @@
 		],
 		"steps": [
 			{
-				"name": "configureVirtualMachines",
-				"label": "Configure virtual machines",
+				"name": "virtualMachineSettings",
+				"label": "Virtual machine settings",
 				"subLabel": {
-					"preValidation": "Usage profile and VM count",
+					"preValidation": "Select VM configuration settings",
 					"postValidation": "Done"
 				},
-				"bladeTitle": "Configure number of VMs based on profile usage",
-				"bladeSubtitle": "Select a usage profile and number of users to determine the recommended number of VMs",
+				"bladeTitle": "Configure the VMs for Azure",
+				"bladeSubtitle": "VM configuration",
 				"elements": [
 					{
 						"name": "virtualMachineSize",
@@ -82,19 +82,7 @@
 						],
 						"visible": true,
 						"count": "[ div (sub (add( mul(int(replace(substring(steps('configureVirtualMachines').virtualMachineSize,10,2),'s',' ')), steps('configureVirtualMachines').usageProfile), int(steps('configureVirtualMachines').totalUsers)),1),   mul(int(replace(substring(steps('configureVirtualMachines').virtualMachineSize, 10, 2), 's', ' ')), steps('configureVirtualMachines').usageProfile) )]"
-					}
-				]
-			},
-			{
-				"name": "virtualMachineSettings",
-				"label": "Virtual machine settings",
-				"subLabel": {
-					"preValidation": "Select VM configuration settings",
-					"postValidation": "Done"
-				},
-				"bladeTitle": "Configure the VMs for Azure",
-				"bladeSubtitle": "VM configuration",
-				"elements": [
+					},
 					{
 						"name": "vmImageType",
 						"type": "Microsoft.Common.OptionsGroup",
