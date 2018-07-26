@@ -274,10 +274,12 @@
                         $avset=Get-AzureRmAvailabilitySet -ResourceGroupName $a.ResourceGroupName
                         if($avset.VirtualMachinesReferences.id -eq $null){
                         $removeavset=Get-AzureRmAvailabilitySet -ResourceGroupName $a.ResourceGroupName -ErrorAction SilentlyContinue | Remove-AzureRmAvailabilitySet -Force
+                        Write-Log -Message "Successfully removed availabilityset"
                         }
                         $checkResources=Get-AzureRmResource -ResourceGroupName $a.ResourceGroupName
                         if(!$checkResources){
                         $removeRg=Remove-AzureRmResourceGroup -Name $a.ResourceGroupName -Force
+                        Write-Log -Message "Successfully removed ResourceGroup"
                         }
                         
                 }
