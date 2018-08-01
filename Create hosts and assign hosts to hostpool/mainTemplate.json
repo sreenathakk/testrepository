@@ -73,35 +73,35 @@
         },
         "ExistingTenantName": {
             "type": "string",
-            "defaultValue": "",
+            "defaultValue": " ",
             "metadata": {
                 "description": "The name of the RDS Tenant in the RDmi deployment."
             }
         },
         "HostPoolName": {
             "type": "string",
-            "defaultValue": "",
+            "defaultValue": " ",
             "metadata": {
                 "description": "The name of the hostpool to be created in the RDS Tenant."
             }
         },  
         "TenantAdminUPN": {
             "type": "string",
-            "defaultvalue": "",
+            "defaultValue": " ",
             "metadata": {
                 "description": "The UPN that has rights in the RDS Tenant to create the hostpool. For example, “admin1@contoso.com”"
             }
         },
         "TenantAdminPassword": {
             "type": "securestring",
-            "defaultvalue": "",
+            "defaultValue": " ",
             "metadata": {
                 "description": "The password that corresponds to the tenant admin UPN."
             }
         },
         "registrationToken": {
             "type": "string",
-            "defaultvalue": "null",
+            "defaultValue": "null",
             "metadata": {
                 "description": "provide valid registration token"
             }
