@@ -66,18 +66,21 @@
         },
         "RDBrokerURL": {
             "type": "string",
+            "defaultValue": "",
             "metadata": {
                 "description": "The RD Broker URL of the RDmi deployment the session hosts will be connected to."
             }
         },
         "ExistingTenantName": {
             "type": "string",
+            "defaultValue": "",
             "metadata": {
                 "description": "The name of the RDS Tenant in the RDmi deployment."
             }
         },
         "HostPoolName": {
             "type": "string",
+            "defaultValue": "",
             "metadata": {
                 "description": "The name of the hostpool to be created in the RDS Tenant."
             }
