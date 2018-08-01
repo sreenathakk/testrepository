@@ -63,14 +63,15 @@ New-Item -Path "C:\PSModules" -ItemType directory -Force -ErrorAction SilentlyCo
 Expand-Archive "C:\PSModules.zip" -DestinationPath "C:\PSModules" -ErrorAction SilentlyContinue
 Set-Location "C:\PSModules"
 Import-Module .\PowershellModules\Microsoft.RDInfra.RDPowershell.dll
-$SecurePass = $Password | ConvertTo-SecureString -asPlainText -Force
-$Credential = New-Object System.Management.Automation.PSCredential($Username, $SecurePass)
-Set-RdsContext -DeploymentUrl $RdbrokerURI -Credential $Credential
-$newRdsTenant = New-RdsTenant -Name $TenantName -AadTenantId $AadTenantId -FriendlyName $FriendlyName -Description $Description
-$newRDSHostPool = New-RdsHostPool -TenantName $newRdsTenant.TenantName  -Name $HostPoolName -Description $HostPoolDescription -FriendlyName $HostPoolFriendlyName
+#$SecurePass = $Password | ConvertTo-SecureString -asPlainText -Force
+#$Credential = New-Object System.Management.Automation.PSCredential($Username, $SecurePass)
+#Set-RdsContext -DeploymentUrl $RdbrokerURI -Credential $Credential
+#$newRdsTenant = New-RdsTenant -Name $TenantName -AadTenantId $AadTenantId -FriendlyName $FriendlyName -Description $Description
+#$newRDSHostPool = New-RdsHostPool -TenantName $newRdsTenant.TenantName  -Name $HostPoolName -Description $HostPoolDescription -FriendlyName $HostPoolFriendlyName
 
 start-job -ScriptBlock{
 param($SubscriptionId,$Username,$Password,$resourceGroupName)
-$command="& 'C:\PSModules\RemoveRG.ps1' -SubscriptionId $SubscriptionId -Username $Username -Password $Password -resourceGroupName $resourceGroupName"
-Start-Process powershell -ArgumentList "-command & {$command}"
+
+PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& 'C:\PSModules\RemoveRG.ps1' -SubscriptionId $SubscriptionId -Username $Username -Password $Password -resourceGroupName $resourceGroupName"
+
 } -ArgumentList($SubscriptionId,$Username,$Password,$resourceGroupName)

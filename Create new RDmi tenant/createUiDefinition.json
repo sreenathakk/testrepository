@@ -4,7 +4,7 @@
 	"version": "0.1.2-preview",
 	"parameters": {
 		"basics": [
-            {
+			{
 				"name": "hosterAdminUPN",
 				"type": "Microsoft.Common.TextBox",
 				"label": "Hoster Admin UPN",
@@ -13,23 +13,22 @@
 					"required": true
 				}
 			},
-            {
-                "name": "hosterAdminPassword",
-                "type": "Microsoft.Common.PasswordBox",
-                "label": {
-                  "password": "Hoster Admin Password",
-                  "confirmPassword": "Confirm password"
-                },
-                "constraints": {
-                    "required": true
-                },
-                "toolTip": "Password for the HosterAdminUPN",
-                "options": {
-                    "hideConfirmation": false
-                },
-                "visible": true
-            },
-			
+			{
+				"name": "hosterAdminPassword",
+				"type": "Microsoft.Common.PasswordBox",
+				"label": {
+					"password": "Hoster Admin Password",
+					"confirmPassword": "Confirm password"
+				},
+				"constraints": {
+					"required": true
+				},
+				"toolTip": "Password for the HosterAdminUPN",
+				"options": {
+					"hideConfirmation": false
+				},
+				"visible": true
+			},
 			{
 				"name": "brokerURL",
 				"type": "Microsoft.Common.TextBox",
@@ -39,8 +38,8 @@
 					"required": true
 				},
 				"visible": true
-            },
-            {
+			},
+			{
 				"name": "AadTenantId",
 				"type": "Microsoft.Common.TextBox",
 				"label": "Aad TenantId",
@@ -52,6 +51,69 @@
 			}
 		],
 		"steps": [
+			{
+				"name": "virtualMachineSettings",
+				"label": "Virtual machine settings",
+				"subLabel": {
+					"preValidation": "Select VM configuration settings",
+					"postValidation": "Done"
+				},
+				"bladeTitle": "Configure the VMs for Azure",
+				"bladeSubtitle": "VM configuration",
+				"elements": [
+					{
+						"name": "virtualMachineSize",
+						"type": "Microsoft.Compute.SizeSelector",
+						"label": "Virtual machine size",
+						"osPlatform": "Windows",
+						"constraints": {
+							"excludedSizes": [
+								"Standard_D1",
+								"Standard_D1_v2",
+								"Standard_DS1",
+								"Standard_DS1_v2"
+							]
+						},
+						"recommendedSizes": [
+							"Standard_D1",
+							"Standard_D1_v2",
+							"Standard_DS1",
+							"Standard_DS1_v2"
+						],
+						"visible": true
+					},
+					{
+						"name": "vmImageType",
+						"type": "Microsoft.Common.OptionsGroup",
+						"label": "Image",
+						"defaultValue": "Gallery",
+						"constraints": {
+							"allowedValues": [
+								{
+									"label": "Gallery",
+									"value": "Gallery"
+								}
+							]
+						},
+						"visible": true
+					},
+					{
+						"name": "galleryImageSelection",
+						"type": "Microsoft.Common.DropDown",
+						"label": "",
+						"defaultValue": "Project Eindhoven Windows 10 SKU",
+						"constraints": {
+							"allowedValues": [
+								{
+									"label": "Windows Server 2016 Datacenter",
+									"value": "2016-Datacenter"
+								}
+							]
+						},
+						"visible": "[equals(steps('virtualMachineSettings').vmImageType, 'Gallery')]"
+					}
+				]
+			},
 			{
 				"name": "tenantInfo",
 				"label": "Tenant info",
@@ -90,9 +152,8 @@
 						}
 					}
 				]
-            },
-            
-            {
+			},
+			{
 				"name": "hostpoolInfo",
 				"label": "Hostpool info",
 				"subLabel": {
@@ -133,12 +194,14 @@
 			}
 		],
 		"outputs": {
-            "hosterAdminUPN":"[basics('hosterAdminUPN')]",
-            "hosterAdminPassword":"[basics('hosterAdminPassword')]",
-            "RDBrokerURL": "[basics('brokerURL')]",
-            "AadTenantId": "[basics('AadTenantId')]",
-            "tenantName": "[steps('temporaryTenantInfo').tenantName]",
-            "hostpoolName": "[steps('temporaryTenantInfo').hostpoolName]"
+			"hosterAdminUPN": "[basics('hosterAdminUPN')]",
+			"hosterAdminPassword": "[basics('hosterAdminPassword')]",
+			"RDBrokerURL": "[basics('brokerURL')]",
+			"AadTenantId": "[basics('AadTenantId')]",
+			"virtualMachineSize": "[steps('virtualMachineSettings').virtualMachineSize]",
+			"galleryImageSelection": "[steps('virtualMachineSettings').galleryImageSelection]",
+			"tenantName": "[steps('tenantInfo').tenantName]",
+			"hostpoolName": "[steps('hostpoolInfo').hostpoolName]"
 		}
 	}
 }
