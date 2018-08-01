@@ -30,7 +30,7 @@
 				"constraints": {
 					"required": true
 				},
-				"visible":  "[equals(basics(hostsRegistration), 'Standard')]"
+				"visible":  "[equals(basics('hostsRegistration'), 'Standard')]"
 			},
 			{
 				"name": "mrsRegion",
@@ -40,7 +40,7 @@
 				"constraints": {
 					"required": true
 				},
-				"visible":  "[equals(basics(hostsRegistration), 'Standard')]"
+				"visible":  "[equals(basics('hostsRegistration'), 'Standard')]"
 			},
 			{
 				"name": "tenantName",
@@ -50,7 +50,7 @@
 				"constraints": {
 					"required": true
 				},
-				"visible":  "[equals(basics(hostsRegistration), 'Standard')]"
+				"visible":  "[equals(basics('hostsRegistration'), 'Standard')]"
 			},
 			{
 				"name": "tenantAdminUPN",
@@ -60,7 +60,7 @@
 				"constraints": {
 					"required": true
 				},
-				"visible":  "[equals(basics(hostsRegistration), 'Standard')]"
+				"visible":  "[equals(basics('hostsRegistration'), 'Standard')]"
 			},
 			{
 				"name": "tenantAdminPassword",
@@ -76,7 +76,7 @@
 				"options": {
 					"hideConfirmation": false
 				},
-				"visible":  "[equals(basics(hostsRegistration), 'Standard')]"
+				"visible":  "[equals(basics('hostsRegistration'), 'Standard')]"
 			},
 			{
 				"name": "registrationToken",
@@ -86,7 +86,7 @@
 				"constraints": {
 					"required": true
 				},
-				"visible":  "[equals(basics(hostsRegistration), 'PreRegistered')]"
+				"visible":  "[equals(basics('hostsRegistration'), 'PreRegistered')]"
 			}
 		],
 	
