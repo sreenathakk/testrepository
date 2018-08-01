@@ -26,7 +26,7 @@
 				"constraints": {
 					"required": true
 				},
-				"visible":  "[equals(steps(hostsRegistration), 'Standard')]"
+				"visible":  "[equals(basics(hostsRegistration), 'Standard')]"
 			},
 			{
 				"name": "mrsRegion",
@@ -36,7 +36,7 @@
 				"constraints": {
 					"required": true
 				},
-				"visible":  "[equals(steps(hostsRegistration), 'Standard')]"
+				"visible":  "[equals(basics(hostsRegistration), 'Standard')]"
 			},
 			{
 				"name": "tenantName",
@@ -46,7 +46,7 @@
 				"constraints": {
 					"required": true
 				},
-				"visible":  "[equals(steps(hostsRegistration), 'Standard')]"
+				"visible":  "[equals(basics(hostsRegistration), 'Standard')]"
 			},
 			{
 				"name": "tenantAdminUPN",
@@ -56,7 +56,7 @@
 				"constraints": {
 					"required": true
 				},
-				"visible":  "[equals(steps(hostsRegistration), 'Standard')]"
+				"visible":  "[equals(basics(hostsRegistration), 'Standard')]"
 			},
 			{
 				"name": "tenantAdminPassword",
@@ -72,7 +72,7 @@
 				"options": {
 					"hideConfirmation": false
 				},
-				"visible":  "[equals(steps(hostsRegistration), 'Standard')]"
+				"visible":  "[basics(steps(hostsRegistration), 'Standard')]"
 			},
 			{
 				"name": "registrationToken",
@@ -82,7 +82,7 @@
 				"constraints": {
 					"required": true
 				},
-				"visible":  "[equals(steps(hostsRegistration), 'PreRegistered')]"
+				"visible":  "[basics(steps(hostsRegistration), 'PreRegistered')]"
 			}
 		]
 	},
@@ -372,9 +372,9 @@
 		"existingSubnetName": "[steps('virtualMachineSettings').hostpoolVnet.subnets.subnet1.name]",
 		"RDBrokerURL": "[basics('mrsRegion')]",
 		"HostPoolName": "[basics('hostpoolName')]",
-		"ExistingTenantName": "[steps('tenantName')]",
-		"TenantAdminUPN": "[steps('tenantAdminUPN')]",
-		"TenantAdminPassword": "[steps('tenantAdminPassword')]",
-		"RegistrationToken": "[steps('registrationToken')]"
+		"ExistingTenantName": "[basics('tenantName')]",
+		"TenantAdminUPN": "[basics('tenantAdminUPN')]",
+		"TenantAdminPassword": "[basics('tenantAdminPassword')]",
+		"RegistrationToken": "[basics('registrationToken')]"
 	}
 }
