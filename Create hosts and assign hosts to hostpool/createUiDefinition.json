@@ -84,8 +84,8 @@
 				},
 				"visible":  "[basics(steps(hostsRegistration), 'PreRegistered')]"
 			}
-		]
-	},
+		],
+	
 	"steps": [
 		{
 			"name": "configureVirtualMachines",
@@ -377,4 +377,5 @@
 		"TenantAdminPassword": "[basics('tenantAdminPassword')]",
 		"RegistrationToken": "[basics('registrationToken')]"
 	}
+}
 }
