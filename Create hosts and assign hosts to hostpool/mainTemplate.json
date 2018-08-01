@@ -66,45 +66,45 @@
         },
         "RDBrokerURL": {
             "type": "string",
-            "defaultValue": "",
             "metadata": {
                 "description": "The RD Broker URL of the RDmi deployment the session hosts will be connected to."
-            }
+            },
+            "defaultValue": " "
         },
         "ExistingTenantName": {
             "type": "string",
-            "defaultValue": " ",
             "metadata": {
                 "description": "The name of the RDS Tenant in the RDmi deployment."
-            }
+            },
+            "defaultValue": " "
         },
         "HostPoolName": {
             "type": "string",
-            "defaultValue": " ",
             "metadata": {
                 "description": "The name of the hostpool to be created in the RDS Tenant."
-            }
-        },  
+            },
+            "defaultValue": " "
+        },
         "TenantAdminUPN": {
             "type": "string",
-            "defaultValue": " ",
             "metadata": {
                 "description": "The UPN that has rights in the RDS Tenant to create the hostpool. For example, “admin1@contoso.com”"
-            }
+            },
+            "defaultValue": " "
         },
         "TenantAdminPassword": {
             "type": "securestring",
-            "defaultValue": " ",
             "metadata": {
                 "description": "The password that corresponds to the tenant admin UPN."
-            }
+            },
+            "defaultValue": " "
         },
         "registrationToken": {
             "type": "string",
-            "defaultValue": "null",
             "metadata": {
                 "description": "provide valid registration token"
-            }
+            },
+            "defaultValue": " "
         },
         "baseUrl": {
             "type": "string",
