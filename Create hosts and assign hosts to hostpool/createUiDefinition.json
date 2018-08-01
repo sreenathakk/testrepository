@@ -7,7 +7,7 @@
 			{
 				"name": "hostsRegistration",
 				"type": "Microsoft.Common.OptionsGroup",
-				"label": "Hosts Registration",
+				"label": "Hosts Registration",				
 				"defaultValue": "Standard",
 				"constraints": {
 					"allowedValues": [
@@ -81,7 +81,7 @@
 			{
 				"name": "registrationToken",
 				"type": "Microsoft.Common.TextBox",
-				"label": "registration Token",
+				"label": "Registration Token",
 				"toolTip": "Enter the valid registration token",
 				"constraints": {
 					"required": true
