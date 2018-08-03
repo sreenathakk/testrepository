@@ -97,7 +97,7 @@
             "metadata": {
                 "description": "The password that corresponds to the tenant admin UPN."
             },
-            "defaultValue": ""
+            "defaultValue": " "
         },
         "registrationToken": {
             "type": "string",
