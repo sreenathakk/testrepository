@@ -122,7 +122,7 @@
         "subnet-id": "[concat(resourceId(parameters('virtualNetworkResourceGroupName'),'Microsoft.Network/virtualNetworks',parameters('existingVnetName')),'/subnets/',parameters('existingSubnetName'))]",
         "HostPoolFriendlyName": "[if(equals(parameters('registrationToken'),'empty'), json('null'), 'template through create hostpool')]",
         "HostPoolDescription": "[if(equals(parameters('registrationToken'),'empty'), json('null'), 'template through create hostpool')]",
-        "RegistrationExpirationHours": "[if(parameters('registrationToken'), json('null'), '48')]",
+        "RegistrationExpirationHours": "[if(equals(parameters('registrationToken'),'empty'), json('null'), '48')]",
         "storageAccountName": "[split( split( parameters('VmImageVhdUri'), '/')[2], '.' )[0]]",
         "storageaccount": "[concat(resourceId(parameters('storageAccountResourceGroupName'),'Microsoft.Storage/storageAccounts',variables('storageAccountName')))]",
         "scriptURI": "[concat(parameters('baseUrl'),'/Scripts/Script.ps1')]",
