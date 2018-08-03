@@ -16,8 +16,8 @@
 							"value": "Standard"
 						},
 						{
-							"label": "PreRegistered",
-							"value": "PreRegistered"
+							"label": "ExistingToken",
+							"value": "ExistingToken"
 						}
 					]
 				},
